@@ -12,6 +12,9 @@ const createUserRepository = (User) => ({
     },
 
     async updateUser(id, data) {
+
+        console.log(id, data);
+        
         const user = await User.findByPk(id);
         
         if (!user) return null;
