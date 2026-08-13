@@ -30,6 +30,19 @@ const createUserRepository = (User) => ({
 
         await user.update({isActive: false});
         return true;
+    },
+
+    async checkUserExist(email){
+        const user = await User.findOne({
+            where: {
+                email: email,
+                isActive: true
+            }
+        });
+
+        if (!user) return false;
+
+        return user;
     }
 })
 

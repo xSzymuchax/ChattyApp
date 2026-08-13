@@ -15,6 +15,10 @@ const userService = {
         return userRepository.getUserById(id);
     },
 
+    async checkUserExist(email) {
+        return userRepository.checkUserExist(email);
+    },
+
     async updateUser(id, data) {
         return userRepository.updateUser(id, data);
     },

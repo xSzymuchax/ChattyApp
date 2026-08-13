@@ -94,14 +94,31 @@ const deleteUser = async (req, res) => {
         res.status(200).json(result);
     } catch (error) {
         console.log(error);
-        res.status(500).json({message: "Internal server error."})
+        res.status(500).json({message: "Internal server error."});
     }
 };
+
+const checkUserExistByEmail = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const result = await userService.checkUserExist(email);
+
+        if (!result)
+            return res.status(404).json({message: "User not found."});
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message: "Internal server error."});
+    }
+}
 
 module.exports = {
     createUser,
     getUsers,
     getUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    checkUserExistByEmail
 };

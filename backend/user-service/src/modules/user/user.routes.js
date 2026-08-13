@@ -7,6 +7,7 @@ router.get("/:id", controller.getUser);
 router.post("/", controller.createUser);
 router.put("/:id", controller.updateUser);
 router.delete("/:id", controller.deleteUser);
+router.post("/userOfEmailActive", controller.checkUserExistByEmail);
 
 
 module.exports = router;

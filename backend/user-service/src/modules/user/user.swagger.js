@@ -266,4 +266,23 @@ registry.registerPath({
     },
 });
 
+// TODO
+registry.registerPath({
+    method: "post",
+    path: "/user/userOfEmailActive",
+    tags: ["User"],
+    summary: "Check if user with given email is still active.",
+    
+    responses: {
+        200: {
+            description: "User removed.",
+            content: {
+                "application/json": {
+                    example: {}
+                },
+            },
+        },
+    },
+});
+
 module.exports = registry;
