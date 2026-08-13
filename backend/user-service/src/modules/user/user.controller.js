@@ -44,7 +44,7 @@ const getUser = async (req, res) => {
         if (!id || Number.isNaN(id) || id <= 0) 
             return res.status(400).json({message: "Bad request."});
 
-        const result = await userService.getUser(id);
+        const result = await userService.getUserById(id);
 
         if (!result) 
             return res.status(404).json({message: "User not found."});

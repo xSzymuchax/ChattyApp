@@ -7,7 +7,7 @@ const createUserRepository = (User) => ({
         return User.create(data);
     },
 
-    async getUser(id) {
+    async getUserById(id) {
         return User.findByPk(id);
     },
 

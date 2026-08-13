@@ -12,7 +12,7 @@ const userService = {
     },
 
     async getUserById(id) {
-        return userRepository.getUser(id);
+        return userRepository.getUserById(id);
     },
 
     async updateUser(id, data) {
