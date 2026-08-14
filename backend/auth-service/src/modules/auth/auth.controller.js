@@ -31,12 +31,14 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
     try{
+        //console.log("CCCCCCCCCCc");
         const {email, password} = req.body;
 
         const token = await authService.generateToken(email, password);
 
         if (!token) return res.status(404).json({message: "User not found." });
 
+        // console.log("BBBBBBBBBB");
         return res.status(200).json({token: token});
     } catch (error){
         console.log(error);

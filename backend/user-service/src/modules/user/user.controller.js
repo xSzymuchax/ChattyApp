@@ -89,6 +89,9 @@ const deleteUser = async (req, res) => {
         const { id } = req.params;
         const userId = req.user.userId;
 
+        console.log(id);
+        console.log(userId);
+
         if (id != userId)
             return res.status(403).json({message: "Access denied."})
 

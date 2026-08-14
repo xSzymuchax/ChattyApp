@@ -9,6 +9,11 @@ const Credential = (sequelize) => {
                 primaryKey: true,
                 autoIncrement: true,
             },
+            userId: {
+                type: DataTypes.INTEGER,
+                unique: true,
+                allowNull: false
+            },
             email: {
                 type: DataTypes.STRING,
                 unique: true,
@@ -18,10 +23,6 @@ const Credential = (sequelize) => {
             },
             passwordHash: {
                 type: DataTypes.STRING,
-            },
-            isActive: {
-                type: DataTypes.BOOLEAN,
-                defaultValue: true,
             },
         },
     );

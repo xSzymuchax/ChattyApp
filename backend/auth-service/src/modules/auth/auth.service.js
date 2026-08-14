@@ -6,12 +6,37 @@ const jwt = require("jsonwebtoken");
 
 const authService = {
     async createCredential(data) {
-        // TODO - password check, hash
+        const {username, email, password, passwordConfirm } = data;
+
+        
+        // TODO 
         if (data.password != data.passwordConfirm || !data.password) 
             return false;
 
-        data.passwordHash = data.password;
+        const userResponse = await fetch(`${process.env.USER_SERVICE_URL}/user`, {
+            method: "post",
+              headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: email,
+                username: username,
+            }),
+        });
+
+        console.log(userResponse);
+
+        if (userResponse.status == 409) return null;
+
+        const userData = await userResponse.json();
+        const userId = userData.id;
+
+        data.passwordHash = password;
+        data.userId = userId;
+
+
         return authRepository.createCredential(data);
+        // create userdata
     },
 
     async updateCredential(email, password){
@@ -24,7 +49,7 @@ const authService = {
 
     // TODO
     async generateToken(email, password){
-        const userData = await fetch(`${process.env.USER_SERVICE_URL}/userOfEmailActive`, {
+        const userResponse = await fetch(`${process.env.USER_SERVICE_URL}/user/userOfEmailActive`, {
             method: "post",
               headers: {
                 'Content-Type': 'application/json',
@@ -34,8 +59,13 @@ const authService = {
             }),
         });
 
-        //console.log(userData);
-        if (!userData) return null; 
+        console.log(userResponse);
+        if (!userResponse.ok) return null; 
+
+        
+        const userData = await userResponse.json();
+        console.log(userData);
+        console.log("AAAAAAAAAAA");
 
         const result = await authRepository.checkCredential(email, password);
 
