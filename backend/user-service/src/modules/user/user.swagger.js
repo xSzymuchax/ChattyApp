@@ -188,6 +188,17 @@ registry.registerPath({
                 },
             },
         },
+        403: {
+            description: "User doesn't have privileges to access or change data.",
+            content: {
+                "application/json": {
+                    schema: ErrorResponseDto,
+                    example: {
+                        message: "Access denied.",
+                    }
+                },
+            },
+        },
         409: {
             description: "Can't create account because of existence of one with same username or email.",
             content: {
@@ -241,6 +252,17 @@ registry.registerPath({
                 },
             },
         },
+        403: {
+            description: "User doesn't have privileges to access or change data.",
+            content: {
+                "application/json": {
+                    schema: ErrorResponseDto,
+                    example: {
+                        message: "Access denied.",
+                    }
+                },
+            },
+        },
         404: {
             description: "User of given id is not existing.",
             content: {
@@ -275,10 +297,12 @@ registry.registerPath({
     
     responses: {
         200: {
-            description: "User removed.",
+            description: "User exists.",
             content: {
                 "application/json": {
-                    example: {}
+                    example: {
+                        message: "TODO"
+                    },
                 },
             },
         },

@@ -63,6 +63,11 @@ const updateUser = async (req, res) => {
         const { id } = req.params;
         const { username, email, description } = req.body;
 
+        const userId = req.user.userId;
+
+        if (id != userId)
+            return res.status(403).json({message: "Access denied."})
+
         if (!id || Number.isNaN(id) || id <= 0) 
             return res.status(400).json({message: "Bad request."});
 
@@ -82,6 +87,10 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
+        const userId = req.user.userId;
+
+        if (id != userId)
+            return res.status(403).json({message: "Access denied."})
 
         if (!id || Number.isNaN(id) || id <= 0) 
             return res.status(400).json({message: "Bad request."});

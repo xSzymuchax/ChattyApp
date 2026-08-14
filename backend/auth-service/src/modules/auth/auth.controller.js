@@ -2,8 +2,6 @@ const authService = require("./auth.service");
 const AuthInfoResponse = require("./dto/auth-info.response");
 const { UniqueConstraintError } = require("sequelize");
 
-// register
-// login
 // changePassword
 
 const register = async (req, res) => {
