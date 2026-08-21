@@ -59,13 +59,13 @@ const authService = {
             }),
         });
 
-        console.log(userResponse);
+        //console.log(userResponse);
         if (!userResponse.ok) return null; 
 
         
         const userData = await userResponse.json();
-        console.log(userData);
-        console.log("AAAAAAAAAAA");
+        // console.log(userData);
+        // console.log("AAAAAAAAAAA");
 
         const result = await authRepository.checkCredential(email, password);
 
