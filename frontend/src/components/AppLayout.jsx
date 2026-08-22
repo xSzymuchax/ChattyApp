@@ -1,11 +1,33 @@
 import { useState } from "react";
+import LayoutManipulator from './LayoutManipulator'
 
 import './AppLayout.css'
 
-function AppLayout({children}) {
-    const [leftWidth, setLeftWidth] = useState(300);
-    const [rightWidth, setRightWidth] = useState(300);
+function AppLayout({usersPanel, chatPanel, gamesPanel}) {
+    const minWidthUserPanel = 100;
+    const minWidthGamesPanel = 100;
     
+    const [leftWidth, setLeftWidth] = useState(minWidthUserPanel);
+    const [rightWidth, setRightWidth] = useState(minWidthGamesPanel);
+    
+    const handleMouseDown = (event, width, setWidth, direction) => {
+        const startX = event.clientX;
+        const startWidth = width;
+
+        const handleMouseMove = (event) => {
+            const delta = event.clientX - startX;
+            setWidth(Math.max(100, startWidth + delta * direction));
+        }
+
+        const handleMouseUp = (event) => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        }
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    }
+
     return(
         <div 
             className="app-layout"
@@ -14,7 +36,21 @@ function AppLayout({children}) {
                 "--right-width": `${rightWidth}px`,
             }}
             >
-            {children}
+            {usersPanel}
+
+            <LayoutManipulator 
+                onMouseDown={(event) => 
+                    handleMouseDown(
+                        event,
+                        leftWidth,
+                        setLeftWidth,
+                        1
+                    )
+                }
+            />
+
+            {chatPanel}
+            {gamesPanel}
         </div>
     );
 }

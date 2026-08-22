@@ -7,10 +7,10 @@ import GamesPanel from './components/GamesPanel';
 
 function App() {
   return (
-    <AppLayout>
-      <UsersPanel></UsersPanel>
-      <ChatPanel></ChatPanel>
-      <GamesPanel></GamesPanel>
+    <AppLayout
+      usersPanel={<UsersPanel />}
+      chatPanel={<ChatPanel />}
+      gamesPanel={<GamesPanel />}>
     </AppLayout>
   );
 }
