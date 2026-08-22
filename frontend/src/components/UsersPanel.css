@@ -1,3 +1,48 @@
 .users-panel {
     background-color: aqua;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.tab-selector {
+    width: 100%vh;
+    height: 70px;
+    background-color: yellow;
+    margin: 10px;
+    display: flex;
+    justify-content: space-evenly;
+    padding: 10px;
+}
+
+.tab-selector button {
+    background-color: lime;
+    flex: 0 1 50px;
+
+    aspect-ratio: 1 / 1;
+
+    max-width: 50px;
+    max-height: 50px;
+
+    width: 50px;
+    height: 50px;
+
+    margin: 10px;
+}
+
+.content-display {
+    background-color: blueviolet;
+    height: 1fr;
+    width: 100%vh;
+    margin: 10px;
+    display: flex;
+    min-height: 0px;
+    flex: 1;
+    flex-direction: column;
+}
+
+.users-list-display {
+    flex: 1;
+    min-height: 0px;
+    overflow-y: scroll;
 }

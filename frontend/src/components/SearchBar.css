@@ -1,0 +1,18 @@
+.search-bar {
+    height: 40px;
+    width: 100%vh;
+    margin: 5px;
+    padding: 5px;
+    background-color: brown;
+    display: flex;
+    
+}
+
+.search-bar > input {
+    width: 100%;
+    margin-right: 10px;
+}
+
+.search-bar > button {
+    aspect-ratio: 1 / 1;
+}
