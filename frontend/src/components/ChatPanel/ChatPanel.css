@@ -1,0 +1,6 @@
+.chat-panel {
+    background-color: red;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}

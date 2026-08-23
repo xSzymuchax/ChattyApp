@@ -1,0 +1,25 @@
+.message-sender {
+    background-color: lime;
+    height:fit-content;
+    min-height: 50px;
+    max-height: 200px;
+    display: flex;
+}
+
+.text-input {
+    min-height: 30px;
+    max-height: 180px;
+    margin: 5px;
+    padding: 5px;
+    flex: 1;
+
+    overflow: scroll;
+    scrollbar-width: none;
+    resize: none;
+}
+
+.send-message-button {
+    width: 30px;
+    height: 30px;
+    margin: 10px;
+}

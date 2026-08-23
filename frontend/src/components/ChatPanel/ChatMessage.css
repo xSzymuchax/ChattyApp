@@ -1,0 +1,10 @@
+.chat-message {
+    background-color:coral;
+    margin: 10px;
+    padding: 10px;
+    max-width: 75%;
+    width:fit-content;
+    margin-left: var(--margin-left-value);
+    margin-right: var(--margin-right-value);
+    overflow-wrap: anywhere;
+}

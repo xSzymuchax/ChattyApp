@@ -1,0 +1,35 @@
+.current-chat-header {
+    background-color: blue;
+    height: 50px;
+    min-height: 50px;
+    max-height: 50px;
+    display: flex;
+}
+
+.chat-image {
+    background-color: red;
+    height: 40px;
+    width: 40px;
+    margin: 5px;
+}
+
+.online-mark {
+    background-color: yellowgreen;
+    width: 10px;
+    height: 10px;
+    margin-top: 35px;
+    border-radius: 100%;
+}
+
+.space-lol {
+    flex: 1;
+}
+
+.chat-name {
+    background-color: aqua;
+    margin: 5px;
+    margin-left: 10px;
+    text-align: center;
+    align-content: center;
+    padding: 5px;
+}

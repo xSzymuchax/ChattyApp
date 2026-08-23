@@ -1,12 +1,12 @@
 import './UsersPanel.css'
 
 import UserSearchCard from './UserSearchCard'
-import SearchBar from './SearchBar'
+import SearchBar from '../SearchBar'
 import ProfileDisplay from './ProfileDisplay'
 
 import { useState } from 'react'
 ;
-import OpenChatCard from './OpenChatCard';
+import OpenChatCard from '../ChatPanel/OpenChatCard';
 
 function UsersPanel({children}) {  
     const [activeView, setActiveView] = useState('usersList');

@@ -1,8 +1,10 @@
 .app-layout {
     display: grid;
-    grid-template-columns: var(--left-width) 10px 1fr var(--right-width);
+    grid-template-columns: var(--left-width) 10px 1fr;
 
     height: 100vh;
     width: 100%;
     background-color: black;
+    overflow: hidden;
+    scrollbar-width: none;
 }

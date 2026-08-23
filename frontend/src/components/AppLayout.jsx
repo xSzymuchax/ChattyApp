@@ -32,8 +32,7 @@ function AppLayout({usersPanel, chatPanel, gamesPanel}) {
         <div 
             className="app-layout"
             style = {{
-                "--left-width": `${leftWidth}px`,
-                "--right-width": `${rightWidth}px`,
+                "--left-width": `${leftWidth}px`
             }}
             >
             {usersPanel}
