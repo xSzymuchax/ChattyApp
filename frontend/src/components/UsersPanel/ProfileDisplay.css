@@ -1,0 +1,23 @@
+.profile-display {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: bisque;
+    margin: auto;
+}
+
+.profile-display > form {
+    border: 5px solid;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    margin: auto;
+}
+
+.profile-display > form > input {
+    background-color: blue;
+    padding: 5px;
+    margin-bottom: 20px;
+}
+
