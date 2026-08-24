@@ -1,9 +1,15 @@
 .current-chat-header {
-    background-color: blue;
+    background-color: #00b7ff;
     height: 50px;
     min-height: 50px;
     max-height: 50px;
     display: flex;
+    padding-left: 20px;
+    padding-right: 20px;
+    margin: auto;
+    border: 5px solid #0077a6;
+    border-top: none;
+    border-radius: 0px 0px 20px 20px;
 }
 
 .chat-image {
@@ -26,10 +32,12 @@
 }
 
 .chat-name {
-    background-color: aqua;
     margin: 5px;
     margin-left: 10px;
     text-align: center;
     align-content: center;
     padding: 5px;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
 }

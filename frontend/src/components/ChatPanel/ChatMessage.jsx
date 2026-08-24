@@ -11,13 +11,8 @@ function ChatMessage({sender_id}) {
 
     return (
         <div 
-        className='chat-message'
-        style={{
-            "--margin-left-value": `${isMyMessage ? 'auto' : '10px'}`,
-            "--margin-right-value": `${isMyMessage ? '10px' : 'auto'}`,
-        }}>
-            RANDOM MESSAGE! YEYEYE
-            aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaa aaaaaaaaaaaaaaaa 
+        className={`chat-message ${(isMyMessage == true) ? 'own' : 'other'}`}>
+            RANDOM MESSAGE! With some text in it!
         </div>
     )
 }
