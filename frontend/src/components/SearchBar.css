@@ -3,16 +3,34 @@
     width: 100%vh;
     margin: 5px;
     padding: 5px;
-    background-color: brown;
     display: flex;
-    
 }
 
 .search-bar > input {
     width: 100%;
     margin-right: 10px;
+
+    min-height: 30px;
+
+    padding-left: 10px;
+    padding-right: 10px;
+
+    background-color: black;
+    color: white;
+
+    border-radius: 20px;
+
+    font-weight: bold;
 }
 
 .search-bar > button {
     aspect-ratio: 1 / 1;
+
+    width: 40px;
+    height: 40px;
+    
+    border: 3px solid black;
+    border-radius: 5px;
+
+    font-size: 40px;
 }

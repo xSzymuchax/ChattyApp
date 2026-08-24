@@ -2,7 +2,7 @@
     position: absolute;
     background-color: green;
     height: 75%;
-    min-width: 200px;
+    min-width: 400px;
     left: 100%;
     top: 12.5%;
     transition: transform 0.35s ease;
