@@ -3,14 +3,14 @@ import './UsersPanel.css'
 import UserSearchCard from './UserSearchCard'
 import SearchBar from '../SearchBar'
 import ProfileDisplay from './ProfileDisplay'
-
-import { useState } from 'react'
-;
 import OpenChatCard from '../ChatPanel/OpenChatCard';
+
+import { useState } from 'react';
+
 
 function UsersPanel({children}) {  
     const [activeView, setActiveView] = useState('usersList');
-    
+
     const showUsers = (event) => {
         setActiveView('usersList');
     }

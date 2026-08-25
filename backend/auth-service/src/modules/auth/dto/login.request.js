@@ -1,11 +1,10 @@
 const z = require("../../../config/zod");
 
-const AuthDataRequestDto =  
+const LoginRequestDto =  
     z.object({
         email: z.string().openapi({example: "Janex@example.org"}),
         password: z.string().openapi({example: "Password1@"}),
-        passwordConfirm: z.string().openapi({example: "Password1@"}),
     })
-    .openapi("UserDataRequestDto");
+    .openapi("LoginRequestDto");
 
-module.exports = { AuthDataRequestDto };
+module.exports = { LoginRequestDto };

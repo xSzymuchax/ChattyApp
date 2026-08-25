@@ -1,0 +1,61 @@
+.login-register {
+    height: 400px;
+    width: 300px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.tab-switcher {
+    height: 50px;
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    padding-bottom: 0px;
+}
+
+.tab-switcher > div {
+    margin: auto;
+    border-radius: 10px 10px 0px 0px;
+    background-color: yellow;
+    width: 40%;
+    height: 100%;
+
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px orange solid;
+}
+
+.container {
+    width: 100%;
+    height: 100%;
+}
+
+.login, .register {
+    height: 100%;
+    width: 100%;
+    background-color: aqua;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 20px;
+    border: 5px red solid;
+}
+
+.l-r-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.l-r-form > label {
+    margin-top: 20px;
+}
+
+.l-r-form > button {
+    width: 100px;
+    height: 30px;
+    margin: auto;
+    margin-top: 20px;
+}
