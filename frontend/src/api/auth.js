@@ -12,3 +12,13 @@ export const register = (username, email, password, passwordConfirm) => {
     );
 }
 
+export const login = (email, password) => {
+    return authApi.post(
+        '/login',
+        {
+            email: email,
+            password: password
+        }
+    )
+}
+
