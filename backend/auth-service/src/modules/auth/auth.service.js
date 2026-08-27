@@ -8,10 +8,13 @@ const authService = {
     async createCredential(data) {
         const {username, email, password, passwordConfirm } = data;
 
-        
+        console.log(data);
+        console.log("AAA");
         // TODO 
-        if (data.password != data.passwordConfirm || !data.password) 
+        if (password != passwordConfirm || !password) 
             return false;
+
+        console.log("AAA");
 
         const userResponse = await fetch(`${process.env.USER_SERVICE_URL}/user`, {
             method: "post",
@@ -24,17 +27,19 @@ const authService = {
             }),
         });
 
-        console.log(userResponse);
+        console.log("AAA");
+
+        // console.log(userResponse);
 
         if (userResponse.status == 409) return null;
-
+console.log("AAA");
         const userData = await userResponse.json();
         const userId = userData.id;
 
         data.passwordHash = password;
         data.userId = userId;
 
-
+console.log("AAA");
         return authRepository.createCredential(data);
         // create userdata
     },

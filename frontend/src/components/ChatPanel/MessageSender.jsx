@@ -13,7 +13,7 @@ function MessageSender() {
             onInput={resizeTextArea}
             maxLength={512}></textarea>
 
-            <button className='send-message-button'></button>
+            <button className='send-message-button'>S</button>
         </div>
     )
 }

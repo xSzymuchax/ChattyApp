@@ -1,6 +1,10 @@
+import { useAuth } from '../../auth/AuthContext'
 import './ProfileDisplay.css'
 
+
 function ProfileDisplay() {
+    const {logout} = useAuth();   
+
     return (
         <div className='profile-display'>
             <form>
@@ -18,6 +22,8 @@ function ProfileDisplay() {
                 <br></br>
                 <button>SAVE</button>
             </form>
+
+            <button onClick={logout}>LOG OUT</button>
         </div>
     )
 }

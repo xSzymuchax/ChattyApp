@@ -1,5 +1,5 @@
 .users-panel {
-    background-color: aqua;
+    background-color: #242424;
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -8,42 +8,48 @@
 .tab-selector {
     width: 100%vh;
     height: 70px;
-    background-color: yellow;
+    background-color: #333333;
     margin: 10px;
     display: flex;
     justify-content: space-evenly;
     padding: 10px;
+
+    border-radius: 20px;
+    border: 3px rgb(173, 171, 171) solid;
 }
 
 .tab-selector button {
-    background-color: lime;
+    background-color: #aaaaaa;
     flex: 0 1 50px;
-
     aspect-ratio: 1 / 1;
-
     max-width: 50px;
     max-height: 50px;
-
     width: 50px;
     height: 50px;
-
     margin: 10px;
+
+    border-radius: 10px;
+    border: 3px rgb(173, 171, 171) solid;
 }
 
 .content-display {
-    background-color: blueviolet;
+    background-color: #333333;
     width: 100%vh;
     margin: 10px;
     display: flex;
     min-height: 0px;
     flex: 1;
     flex-direction: column;
+    border: 3px rgb(173, 171, 171) solid;
+    border-radius: 20px;
 }
 
 .users-list-display {
     flex: 1;
     min-height: 0;
     overflow-y: scroll;
+    scrollbar-width: thin;
+    
 }
 
 .view-container {
@@ -51,4 +57,29 @@
     flex: 1;
     flex-direction: column;
     min-height: 0;
+}
+
+.text-input {
+    min-height: 30px;
+    max-height: 180px;
+    margin: 10px;
+    padding-left: 10px;
+    padding-top: 10px;
+    flex: 1;
+
+    overflow: scroll;
+    scrollbar-width: none;
+    resize: none;
+
+    background-color: black;
+    color: white;
+
+    border-radius: 20px;
+
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.send-message-button {
+
 }

@@ -3,7 +3,7 @@ const { OpenAPIRegistry } = require("@asteasolutions/zod-to-openapi");
 const { AuthResponseDto } = require("./dto/auth-info.response");
 const { ErrorResponseDto } = require("./dto/error.response");
 
-const { AuthDataRequestDto } = require("./dto/auth-data.request");
+const { RegisterRequestDto } = require("./dto/register.request");
 
 const registry = new OpenAPIRegistry();
 
@@ -20,7 +20,7 @@ registry.registerPath({
         body: {
             content: {
                 "application/json": {
-                    schema: AuthDataRequestDto,
+                    schema: RegisterRequestDto,
                 },
             },
         },
