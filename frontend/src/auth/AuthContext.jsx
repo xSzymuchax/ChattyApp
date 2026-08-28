@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from 'react';
+import { jwtDecode } from 'jwt-decode';
 
 const TOKEN_KEY = 'chatty.authToken';
 const AuthContext = createContext(null);
@@ -16,8 +17,10 @@ export function AuthProvider({ children }) {
         setToken(null);
     };
 
+    const userId = token ? jwtDecode(token).userId : null;
+
     return (
-        <AuthContext.Provider value={{ token, isLoggedIn: Boolean(token), login, logout }}>
+        <AuthContext.Provider value={{ token, userId, isLoggedIn: Boolean(token), login, logout }}>
             {children}
         </AuthContext.Provider>
     );

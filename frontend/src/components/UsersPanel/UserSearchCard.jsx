@@ -1,6 +1,6 @@
 import './UserSearchCard.css'
 
-function UserSearchCard({username, profilePicture, description}){
+function UserSearchCard({userData}){
     return (
         <div className="user-search-card">
             <div className="profile-picture">
@@ -9,11 +9,11 @@ function UserSearchCard({username, profilePicture, description}){
 
             <div className="text-data">
                 <div className="username">
-                    <span>USERNAME</span>
+                    <span>{userData.username}</span>
                 </div>
 
                 <div className="description">
-                    <span>Some user desription, because why not add it there to read.</span>
+                    <span>{userData.desription}</span>
                 </div>
             </div>
             

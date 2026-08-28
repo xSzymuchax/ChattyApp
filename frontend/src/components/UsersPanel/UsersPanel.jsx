@@ -5,11 +5,46 @@ import SearchBar from '../SearchBar'
 import ProfileDisplay from './ProfileDisplay'
 import OpenChatCard from '../ChatPanel/OpenChatCard';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getUserWithMatchingUsername } from '../../api/user';
+import { getUserChats } from '../../api/chat';
+import { useAuth } from '../../auth/AuthContext';
 
 
 function UsersPanel({children}) {  
+    const {userId} = useAuth();
     const [activeView, setActiveView] = useState('usersList');
+    const [foundUsers, setFoundUsers] = useState([]);
+    const [foundChats, setFoundChats] = useState([]);
+
+    const getMatchingUsers = async (username) => {
+        try{
+            if (username === '' || !username){
+                setFoundUsers([]);
+            }
+
+            const response = await getUserWithMatchingUsername(username);
+            console.log(response);
+            setFoundUsers(response.data);
+        } catch (error) {
+            console.log(error);
+            setFoundUsers([]);
+        } 
+    }
+
+    useEffect(() => {
+        const getChats = async () => {
+            try {
+                const response = await getUserChats(userId);            
+                setFoundChats(response.data);
+            } catch (error) {
+                console.log("UsersPanel get chats error", error);
+            }
+        }
+        
+        getChats();
+
+    },[foundChats])
 
     const showUsers = (event) => {
         setActiveView('usersList');
@@ -36,20 +71,14 @@ function UsersPanel({children}) {
                 
                 {activeView === 'usersList' && (
                     <div className='view-container'>
-                        <SearchBar />
+                        <SearchBar onSearch={getMatchingUsers}/>
 
                         <div className='users-list-display'>
-                            <UserSearchCard />
-                            <UserSearchCard />
-                            <UserSearchCard />
-                            <UserSearchCard />
-                            <UserSearchCard />
-                            <UserSearchCard />
-                            <UserSearchCard />
-                            <UserSearchCard />
-                            <UserSearchCard />
-                            <UserSearchCard />
-                            <UserSearchCard />
+                            {foundUsers.map((user) => (
+                                <UserSearchCard 
+                                key={user.id}
+                                userData={user}></UserSearchCard>
+                            ))}
                         </div>
                     </div>
                     
@@ -57,10 +86,12 @@ function UsersPanel({children}) {
                 
                 {activeView === 'chatsList' && (
                     <div className='view-container'>
-                        <SearchBar />
-
                         <div className='chats-list-display'>
-                            <OpenChatCard></OpenChatCard>
+                            {userChats.map((chat) => (
+                                <OpenChatCard
+                                key={chat.id}
+                                chatData={chat}></OpenChatCard>
+                            ))}
                         </div>
 
                     </div>

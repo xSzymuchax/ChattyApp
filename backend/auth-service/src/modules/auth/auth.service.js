@@ -16,7 +16,7 @@ const authService = {
 
         console.log("AAA");
 
-        const userResponse = await fetch(`${process.env.USER_SERVICE_URL}/user`, {
+        const userResponse = await fetch(`${process.env.USER_SERVICE_URL}/`, {
             method: "post",
               headers: {
                 'Content-Type': 'application/json',
@@ -54,7 +54,7 @@ console.log("AAA");
 
     // TODO
     async generateToken(email, password){
-        const userResponse = await fetch(`${process.env.USER_SERVICE_URL}/user/userOfEmailActive`, {
+        const userResponse = await fetch(`${process.env.USER_SERVICE_URL}/userOfEmailActive`, {
             method: "post",
               headers: {
                 'Content-Type': 'application/json',

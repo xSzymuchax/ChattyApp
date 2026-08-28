@@ -1,10 +1,10 @@
 import userApi from "./userApi";
 
-export const getUserWithUsername = (username) => {
-    return userApi.post('/user',
+export const getUserWithMatchingUsername = (username) => {
+    return userApi.get('/user',
         {
             params: {
-                username
+                username: username
             }
         }
     );

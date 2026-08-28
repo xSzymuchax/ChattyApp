@@ -1,6 +1,31 @@
+import { useEffect, useState } from 'react';
 import './OpenChatCard.css'
+import { getUserById } from '../../api/user';
+import { useAuth } from '../../auth/AuthContext';
 
-function OpenChatCard() {
+function OpenChatCard({chatData}) {
+    const [chatWithUser, setChatWithUser] = useState({});
+    const {userId} = useAuth();
+    
+    useEffect(() => {
+        const getUser = async () => {
+            const otherUser = chatData.firstUserId==userId ? chatData.secondUserId : chatData.firstUserId;
+            
+            try {
+                const response = await getUserById(otherUser);
+                setChatWithUser(response.data);
+
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        if (chatData && userId)
+            getUser();
+
+        
+    }, [chatData, userId])
+    
     return (
         <div className="open-chat-card">
             <div className="profile-picture">
@@ -9,7 +34,7 @@ function OpenChatCard() {
 
             <div className="text-data">
                 <div className="chat-name">
-                    <span>CHAT_NAME</span>
+                    <span>{chatWithUser.username}</span>
                 </div>
 
                 <div className="last-message">
