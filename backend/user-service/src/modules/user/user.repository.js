@@ -1,6 +1,15 @@
+const { Op } = require("sequelize");
+
 const createUserRepository = (User) => ({
-    async getUsers() {
-        return User.findAll();
+    async getUsers(username = '') {
+        return User.findAll({
+            where: {
+                username: {
+                    [Op.like]: `%${username}%`
+                }
+            },
+            limit: 10
+        });
     },
 
     async createUser(data) {

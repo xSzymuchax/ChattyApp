@@ -75,8 +75,25 @@ const getMessages = async (req, res) => {
     }
 };
 
+const getUserChats = async (req,res) => {
+    try {
+        const chatId = parsePositiveInt(req.params.id);
+
+        if (!chatId)
+            return res.status(400).json({message: "Bad request."});
+
+        const result = await chatService.getUserChats(chatId);
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message: "Internal server error."});
+    }
+}
+
 module.exports = {
     createChat,
     createMessage,
     getMessages,
+    getUserChats
 };

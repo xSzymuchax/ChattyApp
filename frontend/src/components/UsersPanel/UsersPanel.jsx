@@ -87,7 +87,7 @@ function UsersPanel({children}) {
                 {activeView === 'chatsList' && (
                     <div className='view-container'>
                         <div className='chats-list-display'>
-                            {userChats.map((chat) => (
+                            {foundChats.map((chat) => (
                                 <OpenChatCard
                                 key={chat.id}
                                 chatData={chat}></OpenChatCard>

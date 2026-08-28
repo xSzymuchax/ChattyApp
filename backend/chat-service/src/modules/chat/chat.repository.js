@@ -1,3 +1,5 @@
+const {Op} = require('sequelize');
+
 const createChatRepository = (Chat, Message) => ({
     async createChat(data) {
         return Chat.create(data);
@@ -30,6 +32,17 @@ const createChatRepository = (Chat, Message) => ({
             limit: end - start,
         });
     },
+
+    async getUserChats(userId) {
+        return Chat.findAll({
+            where: {
+                [Op.or]: [
+                    { firstUserId: userId },
+                    { secondUserId: userId }
+                ]
+            }
+        });
+    }
 });
 
 module.exports = createChatRepository;

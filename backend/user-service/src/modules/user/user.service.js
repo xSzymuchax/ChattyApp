@@ -7,8 +7,8 @@ const userService = {
         return userRepository.createUser(data);
     },
 
-    async getUsers() {
-        return userRepository.getUsers();
+    async getUsers(username = '') {
+        return userRepository.getUsers(username);
     },
 
     async getUserById(id) {

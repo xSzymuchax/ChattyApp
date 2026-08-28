@@ -58,6 +58,10 @@ const chatService = {
 
         return chatRepository.getMessagesByRange(chatId, start, end);
     },
+
+    async getUserChats(userId) {
+        return chatRepository.getUserChats(userId);
+    }
 };
 
 module.exports = chatService;

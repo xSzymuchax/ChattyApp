@@ -2,7 +2,10 @@ const userService = require("./user.service");
 
 const getUsers = async (req, res) => {
     try{
-        const result = await userService.getUsers();
+        const { username } = req.query;
+        console.log("USERNAME: ", username);
+
+        const result = await userService.getUsers(username);
         res.status(200).json(result);
     } catch (error){
         console.log(error);

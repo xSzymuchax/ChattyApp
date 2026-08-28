@@ -8,6 +8,6 @@ export const createChat = (firstUserId, secondUserId) => {
 }
 
 export const getUserChats = (userID) => {
-    return chatApi.get('/chat/:id');
+    return chatApi.get(`/chat/userChats/${userID}`);
 }
 
