@@ -3,7 +3,7 @@ import './OpenChatCard.css'
 import { getUserById } from '../../api/user';
 import { useAuth } from '../../auth/AuthContext';
 
-function OpenChatCard({chatData}) {
+function OpenChatCard({chatData, chatContent}) {
     const [chatWithUser, setChatWithUser] = useState({});
     const {userId} = useAuth();
     

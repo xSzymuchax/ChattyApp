@@ -11,3 +11,6 @@ export const getUserChats = (userID) => {
     return chatApi.get(`/chat/userChats/${userID}`);
 }
 
+export const getChat = (chatId) => {
+    return chatApi.get(`/chat/${chatId}`);
+}

@@ -99,7 +99,9 @@ function UsersPanel({children}) {
                 
                 {activeView === 'profile' && (
                     <div className='view-container'>
-                        <ProfileDisplay></ProfileDisplay>
+                        <ProfileDisplay
+                        
+                        ></ProfileDisplay>
                     </div>
                 )}
 
