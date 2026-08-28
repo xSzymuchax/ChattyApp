@@ -2,7 +2,7 @@ import authApi from "./authApi";
 
 export const register = (username, email, password, passwordConfirm) => {
     return authApi.post(
-        '/register',
+        '/auth/register',
         {
             username: username,
             email: email,
@@ -14,7 +14,7 @@ export const register = (username, email, password, passwordConfirm) => {
 
 export const login = (email, password) => {
     return authApi.post(
-        '/login',
+        '/auth/login',
         {
             email: email,
             password: password

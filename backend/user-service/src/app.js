@@ -10,6 +10,6 @@ const app = express();
 app.use(express.json());
 app.use("/health", healthRoutes);
 app.use("/swagger", swaggerUI.serve, swaggerUI.setup(swaggerDoc));
-app.use("/user", userRoutes);
+app.use("/", userRoutes);
 
 module.exports = app;

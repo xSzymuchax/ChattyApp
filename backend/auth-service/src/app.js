@@ -10,12 +10,12 @@ const authRoutes = require("./modules/auth/auth.routes");
 const app = express();
 
 app.use(cors({
-    origin: 'http://localhost:5173'
+    origin: 'http://localhost:5173',
 }));
 
 app.use(express.json());
 app.use("/health", healthRoutes);
 app.use("/swagger", swaggerUI.serve, swaggerUI.setup(swaggerDoc));
-app.use("/auth", authRoutes);
+app.use("/", authRoutes);
 
 module.exports = app;

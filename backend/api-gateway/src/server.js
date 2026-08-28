@@ -1,8 +1,23 @@
 const express = require('express');
+const cors = require('cors');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 require('dotenv').config();
 
 const app = express();
+
+app.use(cors({
+    origin: 'http://localhost:5173'
+}));
+
+// app.use((req, res, next) => {
+//     console.log('GATEWAY REQUEST:', req.method, req.headers.host, req.originalUrl);
+//     next();
+// });
+
+// app.use((req, res, next) => {
+//     console.log('AUTH REQUEST:', req.method, req.headers.host, req.originalUrl);
+//     next();
+// });
 
 app.use(
     '/auth',

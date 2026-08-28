@@ -11,7 +11,7 @@ const registry = new OpenAPIRegistry();
 
 registry.registerPath({
     method: "get",
-    path: "/user",
+    path: "/",
     tags: ["User"],
     summary: "Gets all system users",
 
@@ -41,7 +41,7 @@ registry.registerPath({
 
 registry.registerPath({
     method: "get",
-    path: "/user/:id",
+    path: "/:id",
     tags: ["User"],
     summary: "Get user of given id.",
 
@@ -92,7 +92,7 @@ registry.registerPath({
 
 registry.registerPath({
     method: "post",
-    path: "/user",
+    path: "/",
     tags: ["User"],
     summary: "Create user account with given data.",
 
@@ -154,7 +154,7 @@ registry.registerPath({
 
 registry.registerPath({
     method: "put",
-    path: "/user/:id",
+    path: "/:id",
     tags: ["User"],
     summary: "Update user account with given data.",
 
@@ -228,7 +228,7 @@ registry.registerPath({
 
 registry.registerPath({
     method: "delete",
-    path: "/user/:id",
+    path: "/:id",
     tags: ["User"],
     summary: "Soft delete user from system.",
 
@@ -291,7 +291,7 @@ registry.registerPath({
 // TODO
 registry.registerPath({
     method: "post",
-    path: "/user/userOfEmailActive",
+    path: "/userOfEmailActive",
     tags: ["User"],
     summary: "Check if user with given email is still active.",
     

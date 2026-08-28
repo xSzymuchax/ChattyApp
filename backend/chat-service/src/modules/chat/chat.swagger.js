@@ -11,7 +11,7 @@ const registry = new OpenAPIRegistry();
 
 registry.registerPath({
     method: "post",
-    path: "/chat",
+    path: "/",
     tags: ["Chat"],
     summary: "Create a chat between two users.",
 
@@ -72,7 +72,7 @@ registry.registerPath({
 
 registry.registerPath({
     method: "post",
-    path: "/chat/:id/message",
+    path: "/:id/message",
     tags: ["Chat"],
     summary: "Create a message in a chat.",
 
@@ -144,7 +144,7 @@ registry.registerPath({
 
 registry.registerPath({
     method: "post",
-    path: "/chat/:id/messages",
+    path: "/:id/messages",
     tags: ["Chat"],
     summary: "Get messages in a chat from index start (inclusive) to end (exclusive).",
 

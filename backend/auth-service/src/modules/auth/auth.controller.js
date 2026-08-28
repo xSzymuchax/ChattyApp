@@ -6,6 +6,7 @@ const { UniqueConstraintError } = require("sequelize");
 
 const register = async (req, res) => {
     try {
+        console.log("REGISTER HIT");
         const data = req.body;
         const result = await authService.createCredential(data);
 
