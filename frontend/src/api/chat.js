@@ -14,3 +14,11 @@ export const getUserChats = (userID) => {
 export const getChat = (chatId) => {
     return chatApi.get(`/chat/${chatId}`);
 }
+
+export const getMessagesFromChat = (chatId, start, end) => {
+    return chatApi.post(`/chat/${chatId}/messages`, {
+        start: start,
+        end: end
+    });
+}
+

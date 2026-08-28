@@ -12,6 +12,7 @@ const parseNonNegativeInt = (value) => {
 
 const createChat = async (req, res) => {
     try {
+        console.log(req.body);
         const firstUserId = parsePositiveInt(req.body.firstUserId);
         const secondUserId = parsePositiveInt(req.body.secondUserId);
 

@@ -11,7 +11,7 @@ import { getUserChats } from '../../api/chat';
 import { useAuth } from '../../auth/AuthContext';
 
 
-function UsersPanel({children}) {  
+function UsersPanel({onChatSelected}) {  
     const {userId} = useAuth();
     const [activeView, setActiveView] = useState('usersList');
     const [foundUsers, setFoundUsers] = useState([]);
@@ -19,8 +19,9 @@ function UsersPanel({children}) {
 
     const getMatchingUsers = async (username) => {
         try{
-            if (username === '' || !username){
+            if (!username){
                 setFoundUsers([]);
+                return;
             }
 
             const response = await getUserWithMatchingUsername(username);
@@ -32,19 +33,29 @@ function UsersPanel({children}) {
         } 
     }
 
+    const getChatWithUser = (otherUserId) => {
+        return foundChats.find((chat) => {
+            return (
+                (chat.firstUserId === userId && chat.secondUserId === otherUserId) ||
+                (chat.firstUserId === otherUserId && chat.secondUserId === userId)
+            );
+        });
+    };
+
     useEffect(() => {
         const getChats = async () => {
             try {
-                const response = await getUserChats(userId);            
+                const response = await getUserChats(userId);
                 setFoundChats(response.data);
             } catch (error) {
                 console.log("UsersPanel get chats error", error);
             }
-        }
-        
-        getChats();
+        };
 
-    },[foundChats])
+        if (userId) {
+            getChats();
+        }
+    }, [userId]);
 
     const showUsers = (event) => {
         setActiveView('usersList');
@@ -77,7 +88,9 @@ function UsersPanel({children}) {
                             {foundUsers.map((user) => (
                                 <UserSearchCard 
                                 key={user.id}
-                                userData={user}></UserSearchCard>
+                                userData={user}
+                                getChatWithUser={getChatWithUser}
+                                onChatSelected={onChatSelected}></UserSearchCard>
                             ))}
                         </div>
                     </div>
@@ -90,7 +103,8 @@ function UsersPanel({children}) {
                             {foundChats.map((chat) => (
                                 <OpenChatCard
                                 key={chat.id}
-                                chatData={chat}></OpenChatCard>
+                                chatData={chat}
+                                onChatSelected={onChatSelected}></OpenChatCard>
                             ))}
                         </div>
 

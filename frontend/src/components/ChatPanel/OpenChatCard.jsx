@@ -3,7 +3,7 @@ import './OpenChatCard.css'
 import { getUserById } from '../../api/user';
 import { useAuth } from '../../auth/AuthContext';
 
-function OpenChatCard({chatData, chatContent}) {
+function OpenChatCard({chatData, onChatSelected}) {
     const [chatWithUser, setChatWithUser] = useState({});
     const {userId} = useAuth();
     
@@ -27,7 +27,8 @@ function OpenChatCard({chatData, chatContent}) {
     }, [chatData, userId])
     
     return (
-        <div className="open-chat-card">
+        <div className="open-chat-card"
+             onClick={onChatSelected(chatData.id)}>
             <div className="profile-picture">
                 <image />
             </div>

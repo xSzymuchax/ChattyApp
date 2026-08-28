@@ -8,7 +8,7 @@ const authService = {
     async createCredential(data) {
         const {username, email, password, passwordConfirm } = data;
 
-        console.log(data);
+        // console.log(data);
         console.log("AAA");
         // TODO 
         if (password != passwordConfirm || !password) 
