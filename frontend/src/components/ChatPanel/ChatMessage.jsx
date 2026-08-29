@@ -6,7 +6,6 @@ function ChatMessage({sender_id, messageContent}) {
     const [isMyMessage, setIsMyMessage] = useState(false);
     const {userId} = useAuth();
 
-    //TODO - change 1 into user id
     useEffect(() => {
         setIsMyMessage(sender_id === userId);
     }, [sender_id])
