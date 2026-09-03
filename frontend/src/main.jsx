@@ -4,11 +4,14 @@ import { AuthProvider } from './auth/AuthContext.jsx'
 
 import './index.css'
 import App from './App.jsx'
+import { WebSocketProvider } from './websocket/WebSocketContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
-      <App />
+      <WebSocketProvider>
+        <App />
+      </WebSocketProvider>
     </AuthProvider>
   </StrictMode>,
 )

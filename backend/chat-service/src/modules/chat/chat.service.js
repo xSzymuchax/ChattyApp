@@ -46,7 +46,12 @@ const chatService = {
             content: data.content,
         });
 
-        return { message };
+            const recipientId =
+                chat.firstUserId === data.senderId
+                    ? chat.secondUserId
+                    : chat.firstUserId;
+
+        return { message, recipientId };
     },
 
     async getMessages(chatId, start, end) {

@@ -37,6 +37,8 @@ const createMessage = async (req, res) => {
         const senderId = parsePositiveInt(req.body.senderId);
         const { content } = req.body;
 
+        console.log(chatId, senderId, content);
+
         if (!chatId || !senderId || !content)
             return res.status(400).json({message: "Bad request."});
 
@@ -48,7 +50,10 @@ const createMessage = async (req, res) => {
         if (result.error === "forbidden")
             return res.status(403).json({message: "Access denied."});
 
-        res.status(200).json(result.message);
+        res.status(200).json({
+            message: result.message, 
+            recipientId: result.recipientId
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json({message: "Internal server error."});

@@ -60,7 +60,7 @@ function LoginRegister(){
             saveToken(response.data.token);
             navigate('/mainPage');
         } catch (error){
-            alert(error);
+            console.log(error);
         }
         
     }
