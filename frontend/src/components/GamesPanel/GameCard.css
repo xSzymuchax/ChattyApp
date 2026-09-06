@@ -1,0 +1,36 @@
+.game-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 16px;
+    background-color: var(--bg-surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: left;
+}
+
+.game-card:hover {
+    background-color: var(--surface-hover);
+    border-color: var(--accent);
+}
+
+.game-card .icon-gamepad {
+    color: var(--accent);
+    font-size: 22px;
+}
+
+.game-card-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.game-card-description {
+    font-size: 13px;
+    font-weight: normal;
+    color: var(--text-muted);
+}

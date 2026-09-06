@@ -42,6 +42,39 @@
     color: var(--text);
 }
 
+.games-panel-content > .tab-switcher {
+    height: 42px;
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.games-panel-content > .tab-switcher > .toggle-panel-switch {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    background-color: var(--bg-surface);
+    color: var(--text);
+    border: 2px solid var(--accent-dark);
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.games-panel-content > .tab-switcher > .toggle-panel-switch:hover {
+    background-color: var(--accent-dark);
+}
+
+.games-panel-content > .tab-switcher > .toggle-panel-switch.active {
+    background-color: var(--accent);
+    color: var(--bg-black);
+    border-color: var(--accent);
+}
+
 .games-list {
     display: flex;
     flex-direction: column;

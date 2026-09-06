@@ -1,0 +1,55 @@
+.games-invitations {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.games-invitations-empty {
+    color: var(--text-muted);
+}
+
+.game-invitation-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.game-invitation-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.game-invitation-name {
+    font-weight: bold;
+}
+
+.game-invitation-from {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.game-invitation-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.game-invitation-actions button {
+    background-color: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--accent-dark);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-weight: bold;
+}
+
+.game-invitation-actions button.decline {
+    color: var(--text-muted);
+    border-color: var(--border);
+    background-color: transparent;
+}

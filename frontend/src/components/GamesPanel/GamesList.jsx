@@ -7,11 +7,11 @@ const PLACEHOLDER_GAMES = [
     { id: 3, name: 'Game 3', description: 'Description 3' },
 ];
 
-function GamesList() {
+function GamesList({onSelectGame}) {
     return (
-        <div>
+        <div className="games-list">
             {PLACEHOLDER_GAMES.map((game) => (
-                <GameCard key={game.id} game={game} />
+                <GameCard key={game.id} game={game} onSelect={onSelectGame} />
             ))}
         </div>
     );
