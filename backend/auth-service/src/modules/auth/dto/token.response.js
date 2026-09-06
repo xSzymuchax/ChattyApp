@@ -4,7 +4,7 @@ const TokenResponseDto =
     z.object({
         token: z.string().openapi({example: "asdbahbdkawvdakfkankdawd..."}),
     })
-    .openapi("AuthResponse");
+    .openapi("TokenResponse");
 
 module.exports = {
     TokenResponseDto

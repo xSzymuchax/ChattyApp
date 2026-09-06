@@ -1,14 +1,22 @@
 const { OpenAPIRegistry } = require("@asteasolutions/zod-to-openapi");
 
 const { AuthResponseDto } = require("./dto/auth-info.response");
+const { TokenResponseDto } = require("./dto/token.response");
 const { ErrorResponseDto } = require("./dto/error.response");
-
 const { RegisterRequestDto } = require("./dto/register.request");
+const { LoginRequestDto } = require("./dto/login.request");
 
 const registry = new OpenAPIRegistry();
 
-// TODO
-
+const errorContent = (example) => ({
+    description: example,
+    content: {
+        "application/json": {
+            schema: ErrorResponseDto,
+            example: { message: example },
+        },
+    },
+});
 
 registry.registerPath({
     method: "post",
@@ -27,47 +35,48 @@ registry.registerPath({
     },
 
     responses: {
-        200: {
-            description: "Returns information about created credentials.",
+        201: {
+            description: "User registered.",
             content: {
                 "application/json": {
                     schema: AuthResponseDto,
+                    example: { message: "User registered." },
                 },
             },
         },
-        400: {
-            description: "Server couldn't read request data.",
+        400: errorContent("Bad request."),
+        409: errorContent("Account exists."),
+        500: errorContent("Internal server error."),
+    },
+});
+
+registry.registerPath({
+    method: "post",
+    path: "/login",
+    tags: ["Auth"],
+    summary: "Log in and receive a JWT.",
+
+    request: {
+        body: {
             content: {
                 "application/json": {
-                    schema: ErrorResponseDto,
-                    example: {
-                        message: "Bad request.",
-                    }
+                    schema: LoginRequestDto,
                 },
             },
         },
-        409: {
-            description: "Can't create account because of existence of one with same username or email.",
+    },
+
+    responses: {
+        200: {
+            description: "JWT for the authenticated user.",
             content: {
                 "application/json": {
-                    schema: ErrorResponseDto,
-                    example: {
-                        message: "Account with that username/email exists.",
-                    }
+                    schema: TokenResponseDto,
                 },
             },
         },
-        500: {
-            description: "Internal server error.",
-            content: {
-                "application/json": {
-                    schema: ErrorResponseDto,
-                    example: {
-                        message: "Internal server error.",
-                    }
-                },
-            },
-        },
+        404: errorContent("User not found."),
+        500: errorContent("Internal server error."),
     },
 });
 
