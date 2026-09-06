@@ -64,7 +64,7 @@ const getUser = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { username, email, description } = req.body;
+        const { description } = req.body;
 
         const userId = req.user.userId;
 
@@ -74,7 +74,7 @@ const updateUser = async (req, res) => {
         if (!id || Number.isNaN(id) || id <= 0) 
             return res.status(400).json({message: "Bad request."});
 
-        const result = await userService.updateUser(id, {username, email, description});
+        const result = await userService.updateUser(id, {description});
     
         if (!result)
             return res.status(404).json({message: "User not found."});

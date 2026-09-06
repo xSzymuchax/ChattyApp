@@ -53,7 +53,7 @@ function UserSearchCard({userData, getChatWithUser, onChatSelected, onChatReady}
                 </div>
 
                 <div className="description">
-                    <span>{userData.desription}</span>
+                    <span>{userData.description}</span>
                 </div>
             </div>
             

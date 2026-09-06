@@ -139,7 +139,7 @@ registry.registerPath({
     method: "post",
     path: "/{id}/messages",
     tags: ["Chat"],
-    summary: "Get messages in a chat from index start (inclusive) to end (exclusive).",
+    summary: "Get the latest messages in a chat. start/end count from the newest message (start inclusive, end exclusive).",
 
     request: {
         params: IdParamsDto,

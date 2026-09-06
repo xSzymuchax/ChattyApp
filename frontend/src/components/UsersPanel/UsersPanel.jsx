@@ -47,18 +47,22 @@ function UsersPanel({onChatSelected}) {
         });
     };
 
-    useEffect(() => {
-        const getChats = async () => {
-            try {
-                const response = await getUserChats(userId);
-                setFoundChats(response.data);
-            } catch (error) {
-                console.log("UsersPanel get chats error", error);
-            }
-        };
+    const loadChats = async () => {
+        if (!userId) {
+            return;
+        }
 
+        try {
+            const response = await getUserChats(userId);
+            setFoundChats(response.data);
+        } catch (error) {
+            console.log("UsersPanel get chats error", error);
+        }
+    };
+
+    useEffect(() => {
         if (userId) {
-            getChats();
+            loadChats();
         }
     }, [userId]);
 
@@ -68,11 +72,25 @@ function UsersPanel({onChatSelected}) {
 
     const showChats = (event) => {
         setActiveView('chatsList');
+        if (userId) {
+            loadChats();
+        }
     }
 
     const showProfile = (event) => {
         setActiveView('profile');
     }
+
+    const sortedChats = [...foundChats].sort((a, b) => {
+        const aLast = Number(a.lastMessageId ?? 0);
+        const bLast = Number(b.lastMessageId ?? 0);
+
+        if (bLast !== aLast) {
+            return bLast - aLast;
+        }
+
+        return Number(b.id) - Number(a.id);
+    });
 
     return(
         <div className="users-panel">
@@ -106,7 +124,7 @@ function UsersPanel({onChatSelected}) {
                 {activeView === 'chatsList' && (
                     <div className='view-container'>
                         <div className='chats-list-display'>
-                            {foundChats.map((chat) => (
+                            {sortedChats.map((chat) => (
                                 <OpenChatCard
                                 key={chat.id}
                                 chatData={chat}

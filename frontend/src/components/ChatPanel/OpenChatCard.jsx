@@ -9,10 +9,13 @@ function OpenChatCard({chatData, onChatSelected}) {
     
     useEffect(() => {
         const getUser = async () => {
-            const otherUser = chatData.firstUserId==userId ? chatData.secondUserId : chatData.firstUserId;
+            const otherUserId =
+                Number(chatData.firstUserId) === Number(userId)
+                    ? chatData.secondUserId
+                    : chatData.firstUserId;
             
             try {
-                const response = await getUserById(otherUser);
+                const response = await getUserById(otherUserId);
                 setChatWithUser(response.data);
 
             } catch (error) {
@@ -25,10 +28,21 @@ function OpenChatCard({chatData, onChatSelected}) {
 
         
     }, [chatData, userId])
+
+    const lastMessageContent = chatData.lastMessageContent;
+    const lastMessageSenderId = Number(chatData.lastMessageSenderId);
+    const senderLabel =
+        lastMessageSenderId === Number(userId)
+            ? 'You'
+            : chatWithUser.username;
+
+    const handleClick = () => {
+        onChatSelected(chatData.id);
+    };
     
     return (
         <div className="open-chat-card"
-             onClick={onChatSelected(chatData.id)}>
+             onClick={handleClick}>
             <div className="profile-picture">
                 <image />
             </div>
@@ -39,7 +53,14 @@ function OpenChatCard({chatData, onChatSelected}) {
                 </div>
 
                 <div className="last-message">
-                    <span><b className='username'>Username:</b> So... When will you be available? :D</span>
+                    {lastMessageContent ? (
+                        <span>
+                            {senderLabel && <b className='username'>{senderLabel}: </b>}
+                            {lastMessageContent}
+                        </span>
+                    ) : (
+                        <span>No messages yet</span>
+                    )}
                 </div>
             </div>
         </div>

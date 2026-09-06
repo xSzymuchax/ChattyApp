@@ -1,9 +1,19 @@
+import { useLayoutEffect, useRef } from 'react';
 import './ChatContent.css'
 import ChatMessage from './ChatMessage'
 
 function ChatContent({chatMessages = []}) {
+    const contentRef = useRef(null);
+
+    useLayoutEffect(() => {
+        const content = contentRef.current;
+        if (!content) return;
+
+        content.scrollTop = content.scrollHeight;
+    }, [chatMessages]);
+
     return(
-        <div className='chat-content'>
+        <div className='chat-content' ref={contentRef}>
             {chatMessages.map((x) => (
                 <ChatMessage 
                     key={x.id}

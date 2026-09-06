@@ -6,7 +6,8 @@ import './AppLayout.css'
 function AppLayout({usersPanel, chatPanel, gamesPanel}) {
     const minWidthUserPanel = 260;
     const minWidthGamesPanel = 100;
-    
+    const maxWidthUserPanel = window.innerWidth - minWidthGamesPanel - 50;
+
     const [leftWidth, setLeftWidth] = useState(minWidthUserPanel);
     const [rightWidth, setRightWidth] = useState(minWidthGamesPanel);
     
@@ -16,7 +17,7 @@ function AppLayout({usersPanel, chatPanel, gamesPanel}) {
 
         const handleMouseMove = (event) => {
             const delta = event.clientX - startX;
-            setWidth(Math.max(minWidthUserPanel, startWidth + delta * direction));
+            setWidth(Math.max(minWidthUserPanel, Math.min(maxWidthUserPanel, startWidth + delta * direction)));
         }
 
         const handleMouseUp = (event) => {

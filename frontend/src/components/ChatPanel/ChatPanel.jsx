@@ -48,7 +48,7 @@ function ChatPanel({chatId}) {
                 if (!chatId)
                     return;
 
-                const response = await getMessagesFromChat(chatId, 1, 10);
+                const response = await getMessagesFromChat(chatId, 1, 20);
                 console.log(response);
                 setChatMessages(response.data);
             } catch (error) {
