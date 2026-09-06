@@ -1,0 +1,8 @@
+
+.icon-chat:before { content: '\e800'; } /* '' */
+.icon-user:before { content: '\e801'; } /* '' */
+.icon-group:before { content: '\e802'; } /* '' */
+.icon-logout:before { content: '\e803'; } /* '' */
+.icon-floppy:before { content: '\e804'; } /* '' */
+.icon-right-circled:before { content: '\f0a9'; } /* '' */
+.icon-search:before { content: '\f50d'; } /* '' */

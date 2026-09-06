@@ -28,8 +28,17 @@
     height: 50px;
     margin: 10px;
 
-    border-radius: 10px;
-    border: 3px rgb(173, 171, 171) solid;
+    font-size: 30px;
+    border-radius: 20px;
+    border: 3px black solid;
+}
+
+.tab-selector button:hover {
+    background-color: #999999;
+}
+
+.tab-selector button:active {
+    background-color: #666666;
 }
 
 .content-display {
@@ -44,7 +53,8 @@
     border-radius: 20px;
 }
 
-.users-list-display {
+.users-list-display,
+.chats-list-display {
     flex: 1;
     min-height: 0;
     overflow-y: scroll;

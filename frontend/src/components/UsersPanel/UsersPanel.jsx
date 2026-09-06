@@ -95,9 +95,15 @@ function UsersPanel({onChatSelected}) {
     return(
         <div className="users-panel">
             <div className='tab-selector'>
-                <button className='users-list-button' onClick={showUsers}>A</button>
-                <button className='chats-list-button' onClick={showChats}>B</button>
-                <button className='profile-button' onClick={showProfile}>C</button>
+                <button className='users-list-button' onClick={showUsers} aria-label="Users">
+                    <i className="icon-group"></i>
+                </button>
+                <button className='chats-list-button' onClick={showChats} aria-label="Chats">
+                    <i className="icon-chat"></i>
+                </button>
+                <button className='profile-button' onClick={showProfile} aria-label="Profile">
+                    <i className="icon-user"></i>
+                </button>
             </div>
 
             <div className='content-display'>

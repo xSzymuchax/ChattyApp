@@ -48,14 +48,14 @@ function OpenChatCard({chatData, onChatSelected}) {
             </div>
 
             <div className="text-data">
-                <div className="chat-name">
+                <div className="username">
                     <span>{chatWithUser.username}</span>
                 </div>
 
                 <div className="last-message">
                     {lastMessageContent ? (
                         <span>
-                            {senderLabel && <b className='username'>{senderLabel}: </b>}
+                            {senderLabel && <b>{senderLabel}: </b>}
                             {lastMessageContent}
                         </span>
                     ) : (

@@ -18,8 +18,11 @@ function SearchBar({onSearch}) {
             <input 
             type='textbox'
             value={searchValue}
-            onChange={(event) => setSearchValue(event.target.value)} />
-            <button onClick={handleSearch}/>
+            onChange={(event) => setSearchValue(event.target.value)}
+            onKeyDown={handleKeyDown} />
+            <button type="button" onClick={handleSearch} aria-label="Search">
+                <i className="icon-search"></i>
+            </button>
         </div>
     );
 }

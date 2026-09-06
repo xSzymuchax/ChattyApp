@@ -76,10 +76,14 @@ function ProfileDisplay() {
                 <br></br>
                 <br></br>
                 <br></br>
-                <button type='submit' disabled={isSaving}>SAVE</button>
+                <button type='submit' disabled={isSaving}>
+                    <i className="icon-floppy"></i> SAVE
+                </button>
             </form>
 
-            <button type='button' onClick={logout}>LOG OUT</button>
+            <button type='button' onClick={logout}>
+                <i className="icon-logout"></i> LOG OUT
+            </button>
         </div>
     )
 }

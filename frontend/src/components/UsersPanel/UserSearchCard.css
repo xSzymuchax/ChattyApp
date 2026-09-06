@@ -20,19 +20,19 @@
     border-radius: 10px;
 }
 
-.text-data {
+.user-search-card > .text-data {
     overflow: hidden;
     width: 100%vh;
 }
 
-.username > span {
+.user-search-card .username > span {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     font-weight: bold;
 }
 
-.description > span {
+.user-search-card .description > span {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;

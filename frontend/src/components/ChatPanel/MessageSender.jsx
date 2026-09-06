@@ -38,6 +38,15 @@ function MessageSender({chatId, onMessageSend}) {
         setContent("");
     }
 
+    const handleKeyDown = (event) => {
+        if (event.key !== 'Enter' || event.shiftKey) {
+            return;
+        }
+
+        event.preventDefault();
+        handleSendMessage();
+    }
+
     const resizeTextArea = (event) => {
         event.target.style.height = "auto";
         event.target.style.height = `${event.target.scrollHeight}px`;
@@ -48,11 +57,14 @@ function MessageSender({chatId, onMessageSend}) {
             <textarea 
             className='text-input' 
             onInput={resizeTextArea}
-            value={content}
+            value={content ?? ''}
             onChange={handleTyping}
+            onKeyDown={handleKeyDown}
             maxLength={512}></textarea>
 
-            <button onClick={handleSendMessage} className='send-message-button'>S</button>
+            <button type='button' onClick={handleSendMessage} className='send-message-button' aria-label="Send">
+                <i className="icon-right-circled"></i>
+            </button>
         </div>
     )
 }

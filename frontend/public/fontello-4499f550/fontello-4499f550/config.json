@@ -1,0 +1,52 @@
+{
+  "name": "",
+  "css_prefix_text": "icon-",
+  "css_use_suffix": false,
+  "hinting": true,
+  "units_per_em": 1000,
+  "ascent": 850,
+  "glyphs": [
+    {
+      "uid": "dcedf50ab1ede3283d7a6c70e2fe32f3",
+      "css": "chat",
+      "code": 59392,
+      "src": "fontawesome"
+    },
+    {
+      "uid": "19b04848ae7332d2c0ea2a9e19064037",
+      "css": "right-circled",
+      "code": 61609,
+      "src": "fontawesome"
+    },
+    {
+      "uid": "86ee1fc7ff57e9c9c60d8a5e57183776",
+      "css": "user",
+      "code": 59393,
+      "src": "iconic"
+    },
+    {
+      "uid": "e36d581e4f2844db345bddc205d15dda",
+      "css": "group",
+      "code": 59394,
+      "src": "elusive"
+    },
+    {
+      "uid": "0d20938846444af8deb1920dc85a29fb",
+      "css": "logout",
+      "code": 59395,
+      "src": "fontawesome"
+    },
+    {
+      "uid": "191bcf63575a78def53c907c3d3bf7f0",
+      "css": "floppy",
+      "code": 59396,
+      "src": "entypo"
+    },
+    {
+      "uid": "ec21fe3492bb04d9e29103c319556ed8",
+      "css": "search",
+      "code": 62733,
+      "src": "mfglabs"
+    }
+  ]
+}
