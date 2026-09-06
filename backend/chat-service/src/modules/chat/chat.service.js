@@ -66,7 +66,11 @@ const chatService = {
 
     async getUserChats(userId) {
         return chatRepository.getUserChats(userId);
-    }
+    },
+
+    async getChatById(id) {
+        return chatRepository.getChatById(id);
+    },
 };
 
 module.exports = chatService;

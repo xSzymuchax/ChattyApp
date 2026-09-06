@@ -47,6 +47,31 @@ registry.registerPath({
 });
 
 registry.registerPath({
+    method: "get",
+    path: "/{id}",
+    tags: ["Chat"],
+    summary: "Get chat of given id.",
+
+    request: {
+        params: IdParamsDto,
+    },
+
+    responses: {
+        200: {
+            description: "Chat of given id.",
+            content: {
+                "application/json": {
+                    schema: ChatInfoResponseDto,
+                },
+            },
+        },
+        400: errorContent("Bad request."),
+        404: errorContent("Chat not found."),
+        500: errorContent("Internal server error."),
+    },
+});
+
+registry.registerPath({
     method: "post",
     path: "/",
     tags: ["Chat"],

@@ -12,9 +12,35 @@ import { useSocket } from '../../websocket/WebSocketContext';
 
 function ChatPanel({chatId}) {
     const { userId } = useAuth();
-    const [otherUser, setOtherUser] = useState([]);
+    const [otherUser, setOtherUser] = useState({});
     const [chatMessages, setChatMessages] = useState([]);
     const {subscribeToMessages} = useSocket();
+
+    useEffect(() => {
+        const loadOtherUser = async () => {
+            if (!chatId || !userId) {
+                setOtherUser({});
+                return;
+            }
+
+            try {
+                const chatResponse = await getChat(chatId);
+                const chat = chatResponse.data;
+                const otherUserId =
+                    Number(chat.firstUserId) === Number(userId)
+                        ? chat.secondUserId
+                        : chat.firstUserId;
+
+                const userResponse = await getUserById(otherUserId);
+                setOtherUser(userResponse.data);
+            } catch (error) {
+                console.log(error);
+                setOtherUser({});
+            }
+        };
+
+        loadOtherUser();
+    }, [chatId, userId]);
 
     useEffect(() => {
         const getMessages = async () => {
@@ -29,6 +55,7 @@ function ChatPanel({chatId}) {
                 console.log(error);
             }
         }
+
         getMessages();
     },[chatId])
 
@@ -64,7 +91,7 @@ function ChatPanel({chatId}) {
     
     return(
         <div className="chat-panel">
-            <CurrentChatHeader username={otherUser.username}/>
+            <CurrentChatHeader chatName={otherUser.username}/>
             <ChatContent chatMessages={chatMessages}/>
             <MessageSender chatId={chatId} onMessageSend={addMessage}/>
         </div>
