@@ -1,5 +1,20 @@
 import chatApi from "./chatApi";
 
+export const findChatBetweenUsers = (chats, firstUserId, secondUserId) => {
+    const firstId = Number(firstUserId);
+    const secondId = Number(secondUserId);
+
+    return (chats ?? []).find((chat) => {
+        const chatFirstId = Number(chat.firstUserId);
+        const chatSecondId = Number(chat.secondUserId);
+
+        return (
+            (chatFirstId === firstId && chatSecondId === secondId) ||
+            (chatFirstId === secondId && chatSecondId === firstId)
+        );
+    });
+};
+
 export const createChat = (firstUserId, secondUserId) => {
     return chatApi.post('/chat', {
         firstUserId: firstUserId,

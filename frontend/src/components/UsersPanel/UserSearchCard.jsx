@@ -1,8 +1,8 @@
-import { createChat } from '../../api/chat';
+import { createChat, findChatBetweenUsers, getUserChats } from '../../api/chat';
 import { useAuth } from '../../auth/AuthContext';
 import './UserSearchCard.css'
 
-function UserSearchCard({userData, getChatWithUser, onChatSelected}){
+function UserSearchCard({userData, getChatWithUser, onChatSelected, onChatReady}){
     const { userId } = useAuth();
 
     const handleClick = async () => {
@@ -13,10 +13,29 @@ function UserSearchCard({userData, getChatWithUser, onChatSelected}){
                 onChatSelected(existingChat.id);
                 return;
             }
-                
-            const response = await createChat(userId, userData.id);
-            onChatSelected(response.data.id);
 
+            try {
+                const response = await createChat(userId, userData.id);
+                onChatReady?.(response.data);
+                onChatSelected(response.data.id);
+                return;
+            } catch (error) {
+                if (error.response?.status !== 409) {
+                    throw error;
+                }
+            }
+
+            const chatsResponse = await getUserChats(userId);
+            const existingAfterConflict = findChatBetweenUsers(
+                chatsResponse.data,
+                userId,
+                userData.id
+            );
+
+            if (existingAfterConflict) {
+                onChatReady?.(existingAfterConflict);
+                onChatSelected(existingAfterConflict.id);
+            }
         } catch (error) {
             console.log(error);
         }    

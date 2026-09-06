@@ -7,7 +7,7 @@ import OpenChatCard from '../ChatPanel/OpenChatCard';
 
 import { useEffect, useState } from 'react';
 import { getUserWithMatchingUsername } from '../../api/user';
-import { getUserChats } from '../../api/chat';
+import { findChatBetweenUsers, getUserChats } from '../../api/chat';
 import { useAuth } from '../../auth/AuthContext';
 
 
@@ -34,11 +34,16 @@ function UsersPanel({onChatSelected}) {
     }
 
     const getChatWithUser = (otherUserId) => {
-        return foundChats.find((chat) => {
-            return (
-                (chat.firstUserId === userId && chat.secondUserId === otherUserId) ||
-                (chat.firstUserId === otherUserId && chat.secondUserId === userId)
-            );
+        return findChatBetweenUsers(foundChats, userId, otherUserId);
+    };
+
+    const handleChatReady = (chat) => {
+        setFoundChats((prev) => {
+            if (findChatBetweenUsers(prev, chat.firstUserId, chat.secondUserId)) {
+                return prev;
+            }
+
+            return [...prev, chat];
         });
     };
 
@@ -90,7 +95,8 @@ function UsersPanel({onChatSelected}) {
                                 key={user.id}
                                 userData={user}
                                 getChatWithUser={getChatWithUser}
-                                onChatSelected={onChatSelected}></UserSearchCard>
+                                onChatSelected={onChatSelected}
+                                onChatReady={handleChatReady}></UserSearchCard>
                             ))}
                         </div>
                     </div>
