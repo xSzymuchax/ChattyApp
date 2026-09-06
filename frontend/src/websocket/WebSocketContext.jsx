@@ -10,25 +10,40 @@ import {
 import { useAuth } from "../auth/AuthContext";
 
 const WebSocketContext = createContext(null);
+const MAX_RECONNECT_DELAY_MS = 30000;
 
 export function WebSocketProvider({ children }) {
     const { token } = useAuth();
     const [socket, setSocket] = useState(null);
     const socketRef = useRef(null);
     const listenersRef = useRef(new Set());
+    const tokenRef = useRef(token);
+    const reconnectTimeoutRef = useRef(null);
+    const reconnectAttemptRef = useRef(0);
+    const shouldReconnectRef = useRef(false);
 
-    useEffect(() => {
-        if (!token) {
-            if (socketRef.current) {
-                socketRef.current.close();
-                socketRef.current = null;
-            }
+    tokenRef.current = token;
 
-            setSocket(null);
+    const clearReconnectTimeout = () => {
+        if (reconnectTimeoutRef.current) {
+            clearTimeout(reconnectTimeoutRef.current);
+            reconnectTimeoutRef.current = null;
+        }
+    };
+
+    const connect = useCallback(() => {
+        const currentToken = tokenRef.current;
+
+        if (!currentToken) {
             return;
         }
 
-        if (socketRef.current) {
+        const existingSocket = socketRef.current;
+        if (
+            existingSocket &&
+            (existingSocket.readyState === WebSocket.OPEN ||
+                existingSocket.readyState === WebSocket.CONNECTING)
+        ) {
             return;
         }
 
@@ -40,13 +55,16 @@ export function WebSocketProvider({ children }) {
 
         newSocket.onopen = () => {
             console.log("WebSocket connected");
+            reconnectAttemptRef.current = 0;
 
             newSocket.send(
                 JSON.stringify({
                     type: "auth",
-                    token: token
+                    token: tokenRef.current
                 })
             );
+
+            setSocket(newSocket);
         };
 
         newSocket.onmessage = (event) => {
@@ -54,7 +72,6 @@ export function WebSocketProvider({ children }) {
 
             console.log("WebSocket message:", message);
 
-            // Przekazujemy wiadomość wszystkim listenerom
             listenersRef.current.forEach((listener) => {
                 listener(message);
             });
@@ -67,20 +84,55 @@ export function WebSocketProvider({ children }) {
         newSocket.onclose = () => {
             console.log("WebSocket disconnected");
 
-            socketRef.current = null;
-            setSocket(null);
-        };
+            if (socketRef.current === newSocket) {
+                socketRef.current = null;
+                setSocket(null);
+            }
 
-        setSocket(newSocket);
+            if (!shouldReconnectRef.current || !tokenRef.current) {
+                return;
+            }
+
+            const delay = Math.min(
+                1000 * 2 ** reconnectAttemptRef.current,
+                MAX_RECONNECT_DELAY_MS
+            );
+            reconnectAttemptRef.current += 1;
+
+            reconnectTimeoutRef.current = setTimeout(() => {
+                connect();
+            }, delay);
+        };
+    }, []);
+
+    useEffect(() => {
+        shouldReconnectRef.current = Boolean(token);
+        clearReconnectTimeout();
+
+        if (!token) {
+            reconnectAttemptRef.current = 0;
+
+            if (socketRef.current) {
+                socketRef.current.close();
+                socketRef.current = null;
+            }
+
+            setSocket(null);
+            return;
+        }
+
+        connect();
 
         return () => {
-            newSocket.close();
+            shouldReconnectRef.current = false;
+            clearReconnectTimeout();
 
-            if (socketRef.current === newSocket) {
+            if (socketRef.current) {
+                socketRef.current.close();
                 socketRef.current = null;
             }
         };
-    }, [token]);
+    }, [token, connect]);
 
     const subscribeToMessages = useCallback((listener) => {
         listenersRef.current.add(listener);

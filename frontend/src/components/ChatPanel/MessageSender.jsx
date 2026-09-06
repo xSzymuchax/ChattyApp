@@ -28,6 +28,10 @@ function MessageSender({chatId, onMessageSend}) {
 
         console.log(dataToSend);
 
+        if (!socket || socket.readyState !== WebSocket.OPEN) {
+            return;
+        }
+
         socket.send(dataToSend);
         onMessageSend({id: counter, senderId: userId, content: content});
         setCounter((prev) => prev-1);
