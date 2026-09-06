@@ -10,7 +10,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { useSocket } from '../../websocket/WebSocketContext';
 
 
-function ChatPanel({chatId}) {
+function ChatPanel({chatId, onOpenGames}) {
     const { userId } = useAuth();
     const [otherUser, setOtherUser] = useState({});
     const [chatMessages, setChatMessages] = useState([]);
@@ -93,7 +93,18 @@ function ChatPanel({chatId}) {
         <div className="chat-panel">
             <CurrentChatHeader chatName={otherUser.username}/>
             <ChatContent chatMessages={chatMessages}/>
-            <MessageSender chatId={chatId} onMessageSend={addMessage}/>
+            <div className="chat-composer">
+                <button
+                    type="button"
+                    className="open-games-button"
+                    aria-label="Open games"
+                    onClick={onOpenGames}
+                >
+                    <i className="icon-gamepad"></i>
+                </button>
+                <MessageSender chatId={chatId} onMessageSend={addMessage}/>
+            </div>
+            
         </div>
     );
 }

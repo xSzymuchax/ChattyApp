@@ -1,0 +1,62 @@
+.gear-button-wrap {
+    position: relative;
+}
+
+.theme-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 20;
+    min-width: 130px;
+    padding: 8px;
+    background-color: var(--bg-elevated);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tab-selector .theme-menu button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    flex: none;
+    padding: 6px 8px;
+    border-radius: 8px;
+    text-transform: capitalize;
+    font-size: 14px;
+}
+
+.tab-selector .theme-menu button.selected {
+    background-color: var(--accent-dark);
+    color: var(--text);
+}
+
+.theme-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid var(--text);
+    flex-shrink: 0;
+}
+
+.theme-swatch-blue {
+    background-color: #00b7ff;
+}
+
+.theme-swatch-green {
+    background-color: #3dff9a;
+}
+
+.theme-swatch-pink {
+    background-color: #ff6bb5;
+}
+
+.theme-swatch-red {
+    background-color: #ff4d4d;
+}

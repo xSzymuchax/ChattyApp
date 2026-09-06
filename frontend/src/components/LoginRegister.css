@@ -18,7 +18,8 @@
 .tab-switcher > div {
     margin: auto;
     border-radius: 10px 10px 0px 0px;
-    background-color: yellow;
+    background-color: var(--bg-elevated);
+    color: var(--text);
     width: 40%;
     height: 100%;
 
@@ -26,7 +27,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 3px orange solid;
+    border: 2px solid var(--accent-dark);
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.tab-switcher > div:hover {
+    background-color: var(--accent-dark);
 }
 
 .container {
@@ -37,11 +44,12 @@
 .login, .register {
     height: 100%;
     width: 100%;
-    background-color: aqua;
+    background-color: var(--bg-surface);
     padding: 10px;
     box-sizing: border-box;
     border-radius: 20px;
-    border: 5px red solid;
+    border: 3px solid var(--accent-dark);
+    color: var(--text);
 }
 
 .l-r-form {
@@ -51,6 +59,21 @@
 
 .l-r-form > label {
     margin-top: 20px;
+    color: var(--text-muted);
+}
+
+.l-r-form > input {
+    background-color: var(--bg-black);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin-top: 6px;
+}
+
+.l-r-form > input:focus {
+    outline: none;
+    border-color: var(--accent);
 }
 
 .l-r-form > button {
@@ -58,4 +81,13 @@
     height: 30px;
     margin: auto;
     margin-top: 20px;
+    background-color: var(--accent);
+    color: var(--accent-contrast);
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+.l-r-form > button:hover {
+    background-color: var(--accent-hover);
 }

@@ -4,6 +4,7 @@ import UserSearchCard from './UserSearchCard'
 import SearchBar from '../SearchBar'
 import ProfileDisplay from './ProfileDisplay'
 import OpenChatCard from '../ChatPanel/OpenChatCard';
+import GearButton from './GearButton';
 
 import { useEffect, useState } from 'react';
 import { getUserWithMatchingUsername } from '../../api/user';
@@ -104,6 +105,7 @@ function UsersPanel({onChatSelected}) {
                 <button className='profile-button' onClick={showProfile} aria-label="Profile">
                     <i className="icon-user"></i>
                 </button>
+                <GearButton />
             </div>
 
             <div className='content-display'>

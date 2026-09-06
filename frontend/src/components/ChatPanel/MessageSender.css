@@ -1,6 +1,6 @@
 .message-sender {
-    background-color: #00b7ff;
-    height:fit-content;
+    background-color: var(--accent);
+    height: fit-content;
     min-height: 50px;
     max-height: 200px;
     display: flex;
@@ -20,13 +20,19 @@
     scrollbar-width: none;
     resize: none;
 
-    background-color: black;
-    color: white;
+    background-color: var(--bg-black);
+    color: var(--text);
 
     border-radius: 20px;
+    border: 1px solid var(--accent-dark);
 
     font-size: 20px;
     font-weight: bold;
+}
+
+.text-input:focus {
+    outline: none;
+    border-color: var(--accent-hover);
 }
 
 .send-message-button {
@@ -36,8 +42,19 @@
     margin-left: 10px;
     margin-right: 10px;
 
-    border: 3px solid black;
-    border-radius: 5px;
+    border: 2px solid var(--bg-black);
+    border-radius: 12px;
+    background-color: var(--bg-black);
+    color: var(--accent);
 
-    font-size: 40px;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.send-message-button:hover {
+    background-color: var(--accent-dark);
+    color: var(--text);
 }

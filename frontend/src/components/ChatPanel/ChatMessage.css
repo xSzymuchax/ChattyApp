@@ -1,28 +1,29 @@
 .chat-message {
-    background-color:coral;
     margin: 10px;
-    padding: 10px;
+    padding: 10px 12px;
     max-width: 75%;
-    width:fit-content;
+    width: fit-content;
     margin-left: var(--margin-left-value);
     margin-right: var(--margin-right-value);
     overflow-wrap: anywhere;
 
-    border: 3px white solid;
-    border-radius: 10px;
+    border: 2px solid var(--accent-dark);
+    border-radius: 12px;
 
-    color: white;
-    font-weight:bold;
+    color: var(--text);
+    font-weight: 600;
 }
 
 .chat-message.other {
     margin-left: 10px;
     margin-right: auto;
-    background-color: #0077a6;
+    background-color: var(--accent-dark);
 }
 
 .chat-message.own {
     margin-left: auto;
     margin-right: 10px;
-    background-color: #00b7ff;
+    background-color: var(--accent);
+    color: var(--accent-contrast);
+    border-color: var(--accent-hover);
 }

@@ -1,23 +1,31 @@
 .open-chat-card {
     display: flex;
-    background-color: aliceblue;
     padding: 10px;
     width: 100%vh;
     margin: 10px;
     max-height: 100px;
     overflow: hidden;
-    border-radius: 10px;
-    color: white;
-    background-color: #aaaaaa;
+    border-radius: 12px;
+    color: var(--text);
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.open-chat-card:hover {
+    background-color: var(--surface-hover);
+    border-color: var(--accent);
 }
 
 .open-chat-card > .profile-picture {
     width: 50px;
     height: 50px;
     aspect-ratio: 1 / 1;
-    background-color: black;
+    background-color: var(--bg-black);
     margin-right: 10px;
     border-radius: 10px;
+    border: 1px solid var(--accent-dark);
 }
 
 .open-chat-card > .text-data {
@@ -37,4 +45,5 @@
     -webkit-box-orient: vertical;
     margin-top: 10px;
     -webkit-line-clamp: 1;
+    color: var(--text-muted);
 }

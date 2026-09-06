@@ -1,23 +1,74 @@
 .games-panel {
     position: absolute;
-    background-color: green;
+    background-color: var(--bg-elevated);
+    border-left: 3px solid var(--accent);
+    border-top: 2px solid var(--accent-dark);
+    border-bottom: 2px solid var(--accent-dark);
+    border-radius: 16px 0 0 16px;
     height: 75%;
     min-width: 400px;
     left: 100%;
     top: 12.5%;
-    transition: transform 0.35s ease;
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
 }
 
 .games-panel.visible {
     transform: translate(-100%);
-    transition: transform 0.35s ease;
+    box-shadow:
+        -14px 0 36px rgba(0, 0, 0, 0.65),
+        -8px 0 28px color-mix(in srgb, var(--accent) 32%, transparent);
 }
 
 .games-panel > .toggle-panel-switch {
-    background-color: aqua;
+    background-color: var(--accent);
     height: 50px;
     width: 20px;
     position: absolute;
     top: 50%;
     transform: translate(-100%, -50%);
+    border-radius: 8px 0 0 8px;
+    cursor: pointer;
+    box-shadow: -4px 0 12px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.games-panel-content {
+    height: 100%;
+    padding: 20px 20px 20px 28px;
+    overflow-y: auto;
+}
+
+.games-panel-title {
+    margin: 0 0 16px;
+    color: var(--text);
+}
+
+.games-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.game-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 16px;
+    background-color: var(--bg-surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: left;
+}
+
+.game-card:hover {
+    background-color: var(--surface-hover);
+    border-color: var(--accent);
+}
+
+.game-card .icon-gamepad {
+    color: var(--accent);
+    font-size: 22px;
 }

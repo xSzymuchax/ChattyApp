@@ -1,5 +1,5 @@
 .users-panel {
-    background-color: #242424;
+    background-color: var(--bg-panel);
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -8,48 +8,57 @@
 .tab-selector {
     width: 100%vh;
     height: 70px;
-    background-color: #333333;
+    background-color: var(--bg-surface);
     margin: 10px;
     display: flex;
     justify-content: space-evenly;
-    padding: 10px;
+    align-items: center;
+    padding: 0 10px;
 
     border-radius: 20px;
-    border: 3px rgb(173, 171, 171) solid;
+    border: 2px solid var(--border);
 }
 
 .tab-selector button {
-    background-color: #aaaaaa;
-    flex: 0 1 50px;
+    background-color: var(--accent-soft);
+    color: var(--accent);
+    flex: 0 0 46px;
     aspect-ratio: 1 / 1;
-    max-width: 50px;
-    max-height: 50px;
-    width: 50px;
-    height: 50px;
-    margin: 10px;
+    max-width: 46px;
+    max-height: 46px;
+    width: 46px;
+    height: 46px;
+    margin: 0;
 
-    font-size: 30px;
-    border-radius: 20px;
-    border: 3px black solid;
+    font-size: 22px;
+    border-radius: 16px;
+    border: 2px solid var(--accent-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .tab-selector button:hover {
-    background-color: #999999;
+    background-color: var(--accent-dark);
+    color: var(--text);
+    border-color: var(--accent);
 }
 
 .tab-selector button:active {
-    background-color: #666666;
+    background-color: var(--accent);
+    color: var(--bg-black);
 }
 
 .content-display {
-    background-color: #333333;
+    background-color: var(--bg-surface);
     width: 100%vh;
     margin: 10px;
     display: flex;
     min-height: 0px;
     flex: 1;
     flex-direction: column;
-    border: 3px rgb(173, 171, 171) solid;
+    border: 2px solid var(--border);
     border-radius: 20px;
 }
 
@@ -59,7 +68,7 @@
     min-height: 0;
     overflow-y: scroll;
     scrollbar-width: thin;
-    
+    scrollbar-color: var(--accent-dark) transparent;
 }
 
 .view-container {
@@ -81,8 +90,8 @@
     scrollbar-width: none;
     resize: none;
 
-    background-color: black;
-    color: white;
+    background-color: var(--bg-black);
+    color: var(--text);
 
     border-radius: 20px;
 

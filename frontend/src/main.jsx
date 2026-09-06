@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { AuthProvider } from './auth/AuthContext.jsx'
 
+import './theme.js'
 import './index.css'
 import App from './App.jsx'
 import { WebSocketProvider } from './websocket/WebSocketContext.jsx'
