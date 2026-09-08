@@ -6,6 +6,7 @@ import { useState } from "react";
 
 function MainPage() {
     const [selectedChatId, setSelectedChatId] = useState(null);
+    const [opponent, setOpponent] = useState(null);
     const [gamesPanelVisible, setGamesPanelVisible] = useState(false);
 
     return(
@@ -16,12 +17,14 @@ function MainPage() {
                     <ChatPanel
                         chatId={selectedChatId}
                         onOpenGames={() => setGamesPanelVisible(true)}
+                        onOpponentChange={setOpponent}
                     />
                 }
                 gamesPanel={
                     <GamesPanel
                         visible={gamesPanelVisible}
                         onToggle={() => setGamesPanelVisible((visible) => !visible)}
+                        opponent={opponent}
                     />
                 }>
             </AppLayout>    

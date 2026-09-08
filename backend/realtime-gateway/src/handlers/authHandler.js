@@ -11,8 +11,6 @@ function handleAuth(ws, data) {
         return;
     }
 
-    ws.userId = userId;
-
     addConnection(userId, ws);
 
     console.log(`User ${userId} authenticated`);

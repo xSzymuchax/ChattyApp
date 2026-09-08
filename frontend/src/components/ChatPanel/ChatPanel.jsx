@@ -10,7 +10,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { useSocket } from '../../websocket/WebSocketContext';
 
 
-function ChatPanel({chatId, onOpenGames}) {
+function ChatPanel({chatId, onOpenGames, onOpponentChange}) {
     const { userId } = useAuth();
     const [otherUser, setOtherUser] = useState({});
     const [chatMessages, setChatMessages] = useState([]);
@@ -43,6 +43,13 @@ function ChatPanel({chatId, onOpenGames}) {
     }, [chatId, userId]);
 
     useEffect(() => {
+        if (!onOpponentChange)
+            return;
+
+        onOpponentChange(otherUser.id ? otherUser : null);
+    }, [otherUser, onOpponentChange]);
+
+    useEffect(() => {
         const getMessages = async () => {
             try {
                 if (!chatId)
@@ -61,8 +68,6 @@ function ChatPanel({chatId, onOpenGames}) {
 
     useEffect(() => {
         const unsubscribe = subscribeToMessages((message) => {
-            console.log("ChatPanel received:", message);
-
             if (message.type !== "message") {
                 return;
             }

@@ -1,5 +1,6 @@
 import createApi from './createApi';
+import { apiBaseUrl } from '../config/endpoints';
 
-const authApi = createApi(`${import.meta.env.VITE_API_URL}/auth`);
+const authApi = createApi(`${apiBaseUrl}/auth`);
 
 export default authApi;

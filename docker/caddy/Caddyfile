@@ -1,0 +1,21 @@
+{
+	auto_https off
+}
+
+:80 {
+	encode gzip
+
+	handle_path /api/* {
+		reverse_proxy api-gateway:3000
+	}
+
+	handle /ws {
+		reverse_proxy realtime-gateway:3300
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

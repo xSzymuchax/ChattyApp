@@ -1,5 +1,6 @@
 import createApi from './createApi';
+import { apiBaseUrl } from '../config/endpoints';
 
-const chatApi = createApi(import.meta.env.VITE_API_URL);
+const chatApi = createApi(apiBaseUrl);
 
 export default chatApi;

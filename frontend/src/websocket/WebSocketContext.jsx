@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import { useAuth } from "../auth/AuthContext";
+import { realtimeSocketUrl } from "../config/endpoints";
 
 const WebSocketContext = createContext(null);
 const MAX_RECONNECT_DELAY_MS = 30000;
@@ -47,9 +48,7 @@ export function WebSocketProvider({ children }) {
             return;
         }
 
-        const newSocket = new WebSocket(
-            import.meta.env.VITE_RT_API_URL
-        );
+        const newSocket = new WebSocket(realtimeSocketUrl());
 
         socketRef.current = newSocket;
 
@@ -70,7 +69,7 @@ export function WebSocketProvider({ children }) {
         newSocket.onmessage = (event) => {
             const message = JSON.parse(event.data);
 
-            console.log("WebSocket message:", message);
+            console.log("WebSocket message:", message.type);
 
             listenersRef.current.forEach((listener) => {
                 listener(message);

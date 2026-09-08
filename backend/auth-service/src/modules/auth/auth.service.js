@@ -3,6 +3,9 @@ const createAuthRepository = require("./auth.repository");
 const authRepository = createAuthRepository(Credential);
 
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+
+const SALT_ROUNDS = 10;
 
 const authService = {
     async createCredential(data) {
@@ -32,11 +35,17 @@ const authService = {
         // console.log(userResponse);
 
         if (userResponse.status == 409) return null;
-console.log("AAA");
+
+        if (!userResponse.ok)
+            return false;
+
         const userData = await userResponse.json();
         const userId = userData.id;
 
-        data.passwordHash = password;
+        if (!userId)
+            return false;
+
+        data.passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
         data.userId = userId;
 
 console.log("AAA");
@@ -45,7 +54,8 @@ console.log("AAA");
     },
 
     async updateCredential(email, password){
-        return authRepository.updatePassword(email, password);
+        const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+        return authRepository.updatePassword(email, passwordHash);
     },
 
     async deleteCredential(email) {

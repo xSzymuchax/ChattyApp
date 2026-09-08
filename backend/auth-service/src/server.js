@@ -8,7 +8,7 @@ async function startServer() {
     try{
         await sequelize.sync();
 
-        app.listen(PORT, () => {
+        app.listen(PORT, '0.0.0.0', () => {
             console.log(`Auth service running on port ${PORT}`);
         });
     }

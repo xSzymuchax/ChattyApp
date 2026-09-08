@@ -1,0 +1,55 @@
+.abalone-board {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.abalone-board.blocked {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.abalone-status,
+.abalone-legend {
+    color: var(--text-muted);
+}
+
+.abalone-svg {
+    width: 100%;
+    max-width: 360px;
+    height: auto;
+}
+
+.abalone-hex {
+    fill: #6b4a2e;
+    stroke: #3f2a18;
+    stroke-width: 1.5;
+    cursor: pointer;
+}
+
+.abalone-hex.selected {
+    stroke: var(--accent);
+    stroke-width: 3;
+}
+
+.abalone-hex.target {
+    fill: #8a6a42;
+    stroke: #f5d76e;
+    stroke-width: 3;
+}
+
+.abalone-marble {
+    pointer-events: none;
+}
+
+.abalone-marble.black {
+    fill: #1b1b1b;
+    stroke: #000000;
+    stroke-width: 1;
+}
+
+.abalone-marble.white {
+    fill: #f3efe6;
+    stroke: #7a7268;
+    stroke-width: 1;
+}

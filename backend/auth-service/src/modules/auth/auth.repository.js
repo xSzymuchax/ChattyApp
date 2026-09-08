@@ -1,3 +1,5 @@
+const bcrypt = require("bcryptjs");
+
 const authRepository = (Credential) => ({
     async createCredential(data){
         return Credential.create(data);
@@ -33,15 +35,14 @@ const authRepository = (Credential) => ({
     async checkCredential(email, password){
         const credential = await Credential.findOne({
             where: {
-                email: email,
-                passwordHash: password // TODO
+                email: email
             }
         });
 
-        if (!credential)
+        if (!credential || !credential.passwordHash)
             return false;
 
-        return true;
+        return bcrypt.compare(password, credential.passwordHash);
     }
 })
 

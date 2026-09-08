@@ -1,5 +1,11 @@
 const handleAuth = require('../handlers/authHandler');
 const handleMessage = require('../handlers/messageHandler');
+const {
+    handleGameCreate,
+    handleGameAccept,
+    handleGameLeave,
+    handleGameMove,
+} = require('../handlers/gameHandler');
 
 function handleConnection(ws) {
     console.log('New Connection!');
@@ -24,6 +30,22 @@ function handleConnection(ws) {
 
                 case 'message':
                     handleMessage(ws, data);
+                    break;
+
+                case 'gameCreate':
+                    handleGameCreate(ws, data);
+                    break;
+
+                case 'gameAccept':
+                    handleGameAccept(ws, data);
+                    break;
+
+                case 'gameLeave':
+                    handleGameLeave(ws, data);
+                    break;
+
+                case 'gameMove':
+                    handleGameMove(ws, data);
                     break;
 
                 default:

@@ -1,4 +1,5 @@
 const userService = require("./user.service");
+const { UniqueConstraintError } = require("sequelize");
 
 const getUsers = async (req, res) => {
     try{
@@ -27,13 +28,16 @@ const createUser = async (req, res) => {
 
         const result = await userService.createUser({username, email, description});
     
-        // TODO - send email+hashpsswd to auth-service
-
         if (!result)
             return res.status(409).json({message: "Account with that username/email exists."});
 
         res.status(200).json(result);
     } catch (error) {
+        if (error instanceof UniqueConstraintError) {
+            return res.status(409).json({
+                message: "Account with that username/email exists.",
+            });
+        }
         console.log(error);
         res.status(500).json({message: "Internal server error."});
     }

@@ -76,7 +76,7 @@ function LoginRegister(){
                 registerForm.passwordConfirm
             );
         } catch (error) {
-            alert(error);
+            alert(error.response?.data?.message || 'Could not register.');
         }
         
     }
@@ -102,7 +102,7 @@ function LoginRegister(){
 
                             <label htmlFor='password'>Password:</label>
                             <input 
-                                type='textbox' 
+                                type='password' 
                                 name='password' 
                                 value={loginForm.password}
                                 onChange={handleLoginValueChanged}>
@@ -134,7 +134,7 @@ function LoginRegister(){
 
                             <label htmlFor='password'>Password:</label>
                             <input 
-                                type='textbox' 
+                                type='password' 
                                 name='password' 
                                 value={registerForm.password}
                                 onChange={handleRegisterValueChanged}>
@@ -142,7 +142,7 @@ function LoginRegister(){
                             
                             <label htmlFor='passwordConfirm'>Confirm Password:</label>
                             <input 
-                                type='textbox' 
+                                type='password' 
                                 name='passwordConfirm'
                                 value={registerForm.passwordConfirm}
                                 onChange={handleRegisterValueChanged}>

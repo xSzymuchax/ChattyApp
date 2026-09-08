@@ -5,19 +5,49 @@ require('dotenv').config();
 
 const app = express();
 
+function corsOrigin(origin, callback) {
+    if (!origin) {
+        callback(null, true);
+        return;
+    }
+
+    const extra = (process.env.FRONTEND_ORIGIN || '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean);
+
+    if (extra.includes(origin)) {
+        callback(null, true);
+        return;
+    }
+
+    try {
+        const { hostname } = new URL(origin);
+
+        if (
+            hostname === 'localhost' ||
+            hostname === '127.0.0.1' ||
+            hostname.endsWith('.ngrok-free.dev') ||
+            hostname.endsWith('.ngrok-free.app') ||
+            hostname.endsWith('.ngrok.app') ||
+            hostname.endsWith('.ngrok.io')
+        ) {
+            callback(null, true);
+            return;
+        }
+    } catch {
+        callback(null, false);
+        return;
+    }
+
+    callback(null, false);
+}
+
+const PORT = process.env.PORT || 3000;
+
 app.use(cors({
-    origin: 'http://localhost:5173'
+    origin: corsOrigin,
 }));
-
-// app.use((req, res, next) => {
-//     console.log('GATEWAY REQUEST:', req.method, req.headers.host, req.originalUrl);
-//     next();
-// });
-
-// app.use((req, res, next) => {
-//     console.log('AUTH REQUEST:', req.method, req.headers.host, req.originalUrl);
-//     next();
-// });
 
 app.use(
     '/auth',
@@ -43,6 +73,14 @@ app.use(
     })
 );
 
-app.listen(3000, () => {
-    console.log('API Gateway running on port 3000');
+app.use(
+    '/game',
+    createProxyMiddleware({
+        target: process.env.GAME_SERVICE_URL,
+        changeOrigin: true
+    })
+);
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`API Gateway running on port ${PORT}`);
 });
