@@ -36,52 +36,56 @@ const createChatRepository = (Chat, Message) => ({
     },
 
     async getUserChats(userId) {
-        const sequelize = Chat.sequelize;
-
-        return Chat.findAll({
+        const chats = await Chat.findAll({
             where: {
                 [Op.or]: [
                     { firstUserId: userId },
                     { secondUserId: userId }
                 ]
             },
-            attributes: {
-                include: [
-                    [
-                        sequelize.literal(`(
-                            SELECT MAX("m"."id")
-                            FROM "messages" AS "m"
-                            WHERE "m"."chatId" = "Chat"."id"
-                        )`),
-                        "lastMessageId",
-                    ],
-                    [
-                        sequelize.literal(`(
-                            SELECT "m"."content"
-                            FROM "messages" AS "m"
-                            WHERE "m"."chatId" = "Chat"."id"
-                            ORDER BY "m"."id" DESC
-                            LIMIT 1
-                        )`),
-                        "lastMessageContent",
-                    ],
-                    [
-                        sequelize.literal(`(
-                            SELECT "m"."senderId"
-                            FROM "messages" AS "m"
-                            WHERE "m"."chatId" = "Chat"."id"
-                            ORDER BY "m"."id" DESC
-                            LIMIT 1
-                        )`),
-                        "lastMessageSenderId",
-                    ],
-                ],
-            },
-            order: [
-                [sequelize.literal('"lastMessageId"'), "DESC NULLS LAST"],
-                ["id", "DESC"],
-            ],
         });
+
+        if (chats.length === 0) {
+            return [];
+        }
+
+        const chatIds = chats.map((chat) => Number(chat.id));
+        const lastMessages = await Message.findAll({
+            where: {
+                id: {
+                    [Op.in]: Chat.sequelize.literal(
+                        `(SELECT MAX(id) FROM messages WHERE "chatId" IN (${chatIds.join(",")}) GROUP BY "chatId")`
+                    ),
+                },
+            },
+        });
+
+        const lastMessageByChatId = new Map(
+            lastMessages.map((message) => [Number(message.chatId), message])
+        );
+
+        return chats
+            .map((chat) => {
+                const json = chat.toJSON();
+                const lastMessage = lastMessageByChatId.get(Number(chat.id));
+
+                json.lastMessageId = lastMessage?.id ?? null;
+                json.lastMessageContent = lastMessage?.content ?? null;
+                json.lastMessageSenderId = lastMessage?.senderId ?? null;
+                json.lastMessageCreatedAt = lastMessage?.createdAt ?? null;
+
+                return json;
+            })
+            .sort((a, b) => {
+                const aTime = Date.parse(a.lastMessageCreatedAt ?? "") || 0;
+                const bTime = Date.parse(b.lastMessageCreatedAt ?? "") || 0;
+
+                if (bTime !== aTime) {
+                    return bTime - aTime;
+                }
+
+                return Number(b.id) - Number(a.id);
+            });
     }
 });
 

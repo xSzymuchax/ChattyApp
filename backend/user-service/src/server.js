@@ -7,7 +7,7 @@ const sequelize = require("./config/database");
 
 async function startServer() {
     try{
-        await sequelize.sync();
+        await sequelize.sync({ alter: true });
 
         app.listen(PORT, '0.0.0.0', () => {
             console.log(`User service running on port ${PORT}`);

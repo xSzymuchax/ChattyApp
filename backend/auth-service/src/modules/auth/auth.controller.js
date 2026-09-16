@@ -1,8 +1,5 @@
 const authService = require("./auth.service");
-const AuthInfoResponse = require("./dto/auth-info.response");
 const { UniqueConstraintError } = require("sequelize");
-
-// changePassword
 
 const register = async (req, res) => {
     try {
@@ -10,41 +7,62 @@ const register = async (req, res) => {
         const data = req.body;
         const result = await authService.createCredential(data);
 
-        if (result == false)
-            return res.status(400).json({message: "Bad request." });
+        if (result?.error === "weak_password")
+            return res.status(400).json({ code: "WEAK_PASSWORD" });
 
-        if (result == null)
-            return res.status(409).json({message: "Account exists." });
+        if (result?.error === "mismatch")
+            return res.status(400).json({ code: "PASSWORD_MISMATCH" });
+
+        if (result?.error === "exists")
+            return res.status(409).json({ code: "ACCOUNT_EXISTS" });
+
+        if (result?.error)
+            return res.status(400).json({ code: "BAD_REQUEST" });
 
         return res.status(201).json({message: "User registered."});
     } catch (error){
         if (error instanceof UniqueConstraintError) {
             return res.status(409).json({
-                message: "Account exists."
+                code: "ACCOUNT_EXISTS"
             });
         }
         console.log(error);
         return res.status(500).json({
-            message: "Internal server error."
+            code: "SERVER_ERROR"
+        });
+    }
+};
+
+const refresh = async (req, res) => {
+    try {
+        const token = authService.refreshToken(req.user);
+
+        if (!token)
+            return res.status(401).json({ code: "INVALID_TOKEN" });
+
+        return res.status(200).json({ token });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            code: "SERVER_ERROR"
         });
     }
 };
 
 const login = async (req, res) => {
     try{
-        //console.log("CCCCCCCCCCc");
         const {email, password} = req.body;
 
         const token = await authService.generateToken(email, password);
 
-        if (!token) return res.status(404).json({message: "User not found." });
+        if (!token)
+            return res.status(401).json({ code: "INVALID_CREDENTIALS" });
 
-        // console.log("BBBBBBBBBB");
         return res.status(200).json({token: token});
     } catch (error){
         console.log(error);
         return res.status(500).json({
-            message: "Internal server error."
+            code: "SERVER_ERROR"
         });
     }
 };
@@ -52,5 +70,6 @@ const login = async (req, res) => {
 
 module.exports = {
     register,
-    login
+    login,
+    refresh
 };

@@ -33,7 +33,13 @@ function MessageSender({chatId, onMessageSend}) {
         }
 
         socket.send(dataToSend);
-        onMessageSend({id: counter, senderId: userId, content: content});
+        onMessageSend({
+            chatId,
+            id: counter,
+            senderId: userId,
+            content: content,
+            createdAt: new Date().toISOString(),
+        });
         setCounter((prev) => prev-1);
         setContent("");
     }

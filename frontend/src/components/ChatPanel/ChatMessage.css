@@ -27,3 +27,34 @@
     color: var(--accent-contrast);
     border-color: var(--accent-hover);
 }
+
+.message-link {
+    display: inline;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.chat-message.other .message-link {
+    color: var(--accent-hover);
+}
+
+.chat-message.other .message-link:hover {
+    color: var(--text);
+}
+
+.chat-message.own .message-link {
+    color: var(--accent-contrast);
+}
+
+.chat-message.own .message-link:hover {
+    color: var(--bg-black);
+}

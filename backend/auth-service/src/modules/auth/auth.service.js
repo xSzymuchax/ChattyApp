@@ -5,19 +5,37 @@ const authRepository = createAuthRepository(Credential);
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
+const { isPasswordStrong } = require("./password");
+
 const SALT_ROUNDS = 10;
+const TOKEN_EXPIRES_IN = "1h";
+
+const signAccessToken = (userId, username) => {
+    if (!userId) {
+        return null;
+    }
+
+    return jwt.sign(
+        {
+            userId,
+            username,
+        },
+        process.env.JWT_SECRET,
+        {
+            expiresIn: TOKEN_EXPIRES_IN,
+        }
+    );
+};
 
 const authService = {
     async createCredential(data) {
         const {username, email, password, passwordConfirm } = data;
 
-        // console.log(data);
-        console.log("AAA");
-        // TODO 
-        if (password != passwordConfirm || !password) 
-            return false;
+        if (password != passwordConfirm)
+            return { error: "mismatch" };
 
-        console.log("AAA");
+        if (!isPasswordStrong(password))
+            return { error: "weak_password" };
 
         const userResponse = await fetch(`${process.env.USER_SERVICE_URL}/`, {
             method: "post",
@@ -30,30 +48,27 @@ const authService = {
             }),
         });
 
-        console.log("AAA");
-
-        // console.log(userResponse);
-
-        if (userResponse.status == 409) return null;
+        if (userResponse.status == 409) return { error: "exists" };
 
         if (!userResponse.ok)
-            return false;
+            return { error: "failed" };
 
         const userData = await userResponse.json();
         const userId = userData.id;
 
         if (!userId)
-            return false;
+            return { error: "failed" };
 
         data.passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
         data.userId = userId;
 
-console.log("AAA");
         return authRepository.createCredential(data);
-        // create userdata
     },
 
     async updateCredential(email, password){
+        if (!isPasswordStrong(password))
+            return { error: "weak_password" };
+
         const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
         return authRepository.updatePassword(email, passwordHash);
     },
@@ -62,7 +77,6 @@ console.log("AAA");
         return authRepository.deleteCredential(email);
     },
 
-    // TODO
     async generateToken(email, password){
         const userResponse = await fetch(`${process.env.USER_SERVICE_URL}/userOfEmailActive`, {
             method: "post",
@@ -74,32 +88,20 @@ console.log("AAA");
             }),
         });
 
-        //console.log(userResponse);
         if (!userResponse.ok) return null; 
 
         
         const userData = await userResponse.json();
-        // console.log(userData);
-        // console.log("AAAAAAAAAAA");
-
         const result = await authRepository.checkCredential(email, password);
 
-        //console.log(result);
         if (!result) return null;
 
-        const token = 
-            jwt.sign({
-                userId: userData.id,
-                username: userData.username
-            },
-            process.env.JWT_SECRET,
-            {
-                expiresIn: "1h"
-            }
-        );
+        return signAccessToken(userData.id, userData.username);
+    },
 
-        return token;
-    }
+    refreshToken(user) {
+        return signAccessToken(user?.userId, user?.username);
+    },
 };
 
 module.exports = authService;

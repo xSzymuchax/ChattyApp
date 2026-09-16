@@ -1,5 +1,5 @@
 .login-register {
-    height: 400px;
+    min-height: 400px;
     width: 300px;
     position: absolute;
     top: 50%;
@@ -90,4 +90,19 @@
 
 .l-r-form > button:hover {
     background-color: var(--accent-hover);
+}
+
+.form-error,
+.form-success {
+    margin: 15px 0 0;
+    text-align: center;
+    font-weight: bold;
+}
+
+.form-error {
+    color: #ff4d4d;
+}
+
+.form-success {
+    color: var(--accent);
 }

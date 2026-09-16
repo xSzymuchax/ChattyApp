@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import './OpenChatCard.css'
 import { getUserById } from '../../api/user';
 import { useAuth } from '../../auth/AuthContext';
+import { formatLastMessageTime } from '../../util/chatList';
+import UserAvatar from '../UserAvatar';
 
 function OpenChatCard({chatData, onChatSelected}) {
     const [chatWithUser, setChatWithUser] = useState({});
@@ -23,14 +25,15 @@ function OpenChatCard({chatData, onChatSelected}) {
             }
         };
 
-        if (chatData && userId)
+        if (chatData?.id && userId)
             getUser();
 
         
-    }, [chatData, userId])
+    }, [chatData?.id, chatData?.firstUserId, chatData?.secondUserId, userId]);
 
     const lastMessageContent = chatData.lastMessageContent;
     const lastMessageSenderId = Number(chatData.lastMessageSenderId);
+    const lastMessageTime = formatLastMessageTime(chatData.lastMessageCreatedAt);
     const senderLabel =
         lastMessageSenderId === Number(userId)
             ? 'You'
@@ -44,12 +47,22 @@ function OpenChatCard({chatData, onChatSelected}) {
         <div className="open-chat-card"
              onClick={handleClick}>
             <div className="profile-picture">
-                <image />
+                <UserAvatar
+                    userId={chatWithUser.id}
+                    username={chatWithUser.username}
+                    hasAvatar={chatWithUser.hasAvatar}
+                    version={chatWithUser.updatedAt}
+                />
             </div>
 
             <div className="text-data">
-                <div className="username">
-                    <span>{chatWithUser.username}</span>
+                <div className="card-header">
+                    <div className="username">
+                        <span>{chatWithUser.username}</span>
+                    </div>
+                    {lastMessageTime && (
+                        <span className="last-message-time">{lastMessageTime}</span>
+                    )}
                 </div>
 
                 <div className="last-message">

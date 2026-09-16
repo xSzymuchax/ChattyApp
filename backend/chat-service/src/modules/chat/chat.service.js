@@ -13,7 +13,28 @@ const normalizeUserIds = (firstUserId, secondUserId) => {
 };
 
 const isParticipant = (chat, senderId) => {
-    return chat.firstUserId === senderId || chat.secondUserId === senderId;
+    return (
+        Number(chat.firstUserId) === Number(senderId) ||
+        Number(chat.secondUserId) === Number(senderId)
+    );
+};
+
+const notifyChatCreated = (userId, chat) => {
+    const url = process.env.REALTIME_GATEWAY_URL;
+
+    if (!url || !userId || !chat) {
+        return;
+    }
+
+    fetch(`${url}/notify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            userId,
+            type: "chatCreated",
+            message: chat,
+        }),
+    }).catch(() => {});
 };
 
 const chatService = {
@@ -30,7 +51,9 @@ const chatService = {
 
         if (existingChat) return null;
 
-        return chatRepository.createChat({ firstUserId, secondUserId });
+        const chat = await chatRepository.createChat({ firstUserId, secondUserId });
+        notifyChatCreated(data.secondUserId, chat.toJSON());
+        return chat;
     },
 
     async createMessage(chatId, data) {
@@ -46,10 +69,10 @@ const chatService = {
             content: data.content,
         });
 
-            const recipientId =
-                chat.firstUserId === data.senderId
-                    ? chat.secondUserId
-                    : chat.firstUserId;
+        const recipientId =
+            Number(chat.firstUserId) === Number(data.senderId)
+                ? Number(chat.secondUserId)
+                : Number(chat.firstUserId);
 
         return { message, recipientId };
     },

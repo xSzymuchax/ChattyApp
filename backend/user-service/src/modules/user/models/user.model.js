@@ -33,7 +33,16 @@ const User = (sequelize) => {
                 type: DataTypes.BOOLEAN,
                 defaultValue: true,
             },
+            avatar: {
+                type: DataTypes.BLOB,
+                allowNull: true,
+            },
         },
+        {
+            defaultScope: {
+                attributes: { exclude: ["avatar"] },
+            },
+        }
     );
 };
 

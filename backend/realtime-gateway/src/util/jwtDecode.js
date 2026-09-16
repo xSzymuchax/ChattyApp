@@ -1,8 +1,12 @@
 const jwt = require('jsonwebtoken');
 
 const decodeUserId = (token) => {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return jwt.decode(token).userId;
-}
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        return decoded?.userId ?? null;
+    } catch {
+        return null;
+    }
+};
 
 module.exports = decodeUserId;

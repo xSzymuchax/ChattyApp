@@ -10,24 +10,28 @@ import { useEffect, useState } from 'react';
 import { getUserWithMatchingUsername } from '../../api/user';
 import { findChatBetweenUsers, getUserChats } from '../../api/chat';
 import { useAuth } from '../../auth/AuthContext';
+import { useSocket } from '../../websocket/WebSocketContext';
+import { applyMessageToChatList, sortChatsByLastMessage } from '../../util/chatList';
 
 
-function UsersPanel({onChatSelected}) {  
+function UsersPanel({onChatSelected, lastMessageEvent}) {  
     const {userId} = useAuth();
-    const [activeView, setActiveView] = useState('usersList');
+    const {subscribeToMessages} = useSocket();
+    const [activeView, setActiveView] = useState('chatsList');
     const [foundUsers, setFoundUsers] = useState([]);
     const [foundChats, setFoundChats] = useState([]);
 
     const getMatchingUsers = async (username) => {
-        try{
-            if (!username){
-                setFoundUsers([]);
-                return;
-            }
+        const query = username?.trim();
 
-            const response = await getUserWithMatchingUsername(username);
-            console.log(response);
-            setFoundUsers(response.data);
+        if (!query){
+            setFoundUsers([]);
+            return;
+        }
+
+        try{
+            const response = await getUserWithMatchingUsername(query);
+            setFoundUsers(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.log(error);
             setFoundUsers([]);
@@ -39,6 +43,10 @@ function UsersPanel({onChatSelected}) {
     };
 
     const handleChatReady = (chat) => {
+        if (!chat?.id) {
+            return;
+        }
+
         setFoundChats((prev) => {
             if (findChatBetweenUsers(prev, chat.firstUserId, chat.secondUserId)) {
                 return prev;
@@ -55,7 +63,7 @@ function UsersPanel({onChatSelected}) {
 
         try {
             const response = await getUserChats(userId);
-            setFoundChats(response.data);
+            setFoundChats(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.log("UsersPanel get chats error", error);
         }
@@ -67,31 +75,42 @@ function UsersPanel({onChatSelected}) {
         }
     }, [userId]);
 
-    const showUsers = (event) => {
+    useEffect(() => {
+        if (!lastMessageEvent) {
+            return;
+        }
+
+        setFoundChats((prev) => applyMessageToChatList(prev, lastMessageEvent));
+    }, [lastMessageEvent]);
+
+    useEffect(() => {
+        const unsubscribe = subscribeToMessages((payload) => {
+            if (payload.type === "chatCreated") {
+                handleChatReady(payload.message);
+                return;
+            }
+
+            if (payload.type === "message") {
+                setFoundChats((prev) => applyMessageToChatList(prev, payload.message));
+            }
+        });
+
+        return unsubscribe;
+    }, [subscribeToMessages]);
+
+    const showUsers = () => {
         setActiveView('usersList');
     }
 
-    const showChats = (event) => {
+    const showChats = () => {
         setActiveView('chatsList');
-        if (userId) {
-            loadChats();
-        }
     }
 
-    const showProfile = (event) => {
+    const showProfile = () => {
         setActiveView('profile');
     }
 
-    const sortedChats = [...foundChats].sort((a, b) => {
-        const aLast = Number(a.lastMessageId ?? 0);
-        const bLast = Number(b.lastMessageId ?? 0);
-
-        if (bLast !== aLast) {
-            return bLast - aLast;
-        }
-
-        return Number(b.id) - Number(a.id);
-    });
+    const sortedChats = sortChatsByLastMessage(foundChats);
 
     return(
         <div className="users-panel">
@@ -116,14 +135,18 @@ function UsersPanel({onChatSelected}) {
                         <SearchBar onSearch={getMatchingUsers}/>
 
                         <div className='users-list-display'>
-                            {foundUsers.map((user) => (
-                                <UserSearchCard 
-                                key={user.id}
-                                userData={user}
-                                getChatWithUser={getChatWithUser}
-                                onChatSelected={onChatSelected}
-                                onChatReady={handleChatReady}></UserSearchCard>
-                            ))}
+                            {foundUsers.length === 0 ? (
+                                <p className="list-empty">No users found</p>
+                            ) : (
+                                foundUsers.map((user) => (
+                                    <UserSearchCard 
+                                    key={user.id}
+                                    userData={user}
+                                    getChatWithUser={getChatWithUser}
+                                    onChatSelected={onChatSelected}
+                                    onChatReady={handleChatReady}></UserSearchCard>
+                                ))
+                            )}
                         </div>
                     </div>
                     
@@ -132,12 +155,16 @@ function UsersPanel({onChatSelected}) {
                 {activeView === 'chatsList' && (
                     <div className='view-container'>
                         <div className='chats-list-display'>
-                            {sortedChats.map((chat) => (
-                                <OpenChatCard
-                                key={chat.id}
-                                chatData={chat}
-                                onChatSelected={onChatSelected}></OpenChatCard>
-                            ))}
+                            {sortedChats.length === 0 ? (
+                                <p className="list-empty">No existing chats.</p>
+                            ) : (
+                                sortedChats.map((chat) => (
+                                    <OpenChatCard
+                                    key={chat.id}
+                                    chatData={chat}
+                                    onChatSelected={onChatSelected}></OpenChatCard>
+                                ))
+                            )}
                         </div>
 
                     </div>

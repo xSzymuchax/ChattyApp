@@ -26,18 +26,40 @@
     margin-right: 10px;
     border-radius: 10px;
     border: 1px solid var(--accent-dark);
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
 .open-chat-card > .text-data {
     overflow: hidden;
-    width: 100%vh;
+    flex: 1;
+    min-width: 0;
+}
+
+.open-chat-card .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.open-chat-card .username {
+    min-width: 0;
 }
 
 .open-chat-card .username > span {
+    display: block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     font-weight: bold;
+}
+
+.open-chat-card .last-message-time {
+    flex-shrink: 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    white-space: nowrap;
 }
 
 .open-chat-card .last-message > span {

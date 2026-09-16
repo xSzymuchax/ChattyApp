@@ -66,9 +66,22 @@
 .chats-list-display {
     flex: 1;
     min-height: 0;
-    overflow-y: scroll;
+    overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--accent-dark) transparent;
+    display: flex;
+    flex-direction: column;
+}
+
+.list-empty {
+    margin: 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    color: var(--text-muted);
 }
 
 .view-container {
@@ -97,8 +110,4 @@
 
     font-size: 20px;
     font-weight: bold;
-}
-
-.send-message-button {
-
 }

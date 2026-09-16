@@ -21,6 +21,9 @@ function LoginRegister(){
         email: '',
         password: ''
     });
+    const [loginError, setLoginError] = useState('');
+    const [registerError, setRegisterError] = useState('');
+    const [registerSuccess, setRegisterSuccess] = useState('');
 
     const handleRegisterValueChanged = (e) => {
         const { name, value } = e.target;
@@ -40,16 +43,23 @@ function LoginRegister(){
         }));
     }
 
-    const showLogin = (e) => {
+    const showLogin = () => {
         setisLoginTabSelected(true);
+        setRegisterError('');
+        setLoginError('');
     } 
 
-    const showRegister = (e) => {
+    const showRegister = () => {
         setisLoginTabSelected(false);
+        setRegisterError('');
+        setLoginError('');
+        setRegisterSuccess('');
     }
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setLoginError('');
+        setRegisterSuccess('');
 
         try {
             const response = await login(
@@ -60,25 +70,53 @@ function LoginRegister(){
             saveToken(response.data.token);
             navigate('/mainPage');
         } catch (error){
-            console.log(error);
+            setLoginError('Could not log in.');
         }
         
     }
 
     const handleRegister = async (e) => {
         e.preventDefault();
+        setRegisterError('');
+        setRegisterSuccess('');
 
         try {
-            const response = await register(
+            await register(
                 registerForm.username,
                 registerForm.email,
                 registerForm.password,
                 registerForm.passwordConfirm
             );
+
+            setRegisterForm({
+                username: '',
+                email: '',
+                password: '',
+                passwordConfirm: ''
+            });
+            setRegisterSuccess('Account created. You can log in.');
+            setisLoginTabSelected(true);
         } catch (error) {
-            alert(error.response?.data?.message || 'Could not register.');
+            const status = error.response?.status;
+            const code = error.response?.data?.code;
+
+            if (status === 409 || code === 'ACCOUNT_EXISTS') {
+                setRegisterError('Username or email is already taken.');
+                return;
+            }
+
+            if (code === 'WEAK_PASSWORD') {
+                setRegisterError('Password is too weak.');
+                return;
+            }
+
+            if (code === 'PASSWORD_MISMATCH') {
+                setRegisterError('Passwords do not match.');
+                return;
+            }
+
+            setRegisterError('Could not register.');
         }
-        
     }
 
     return (
@@ -109,6 +147,12 @@ function LoginRegister(){
                             </input>
 
                             <button type='submit'>LOGIN</button>
+                            {loginError && (
+                                <p className="form-error">{loginError}</p>
+                            )}
+                            {registerSuccess && (
+                                <p className="form-success">{registerSuccess}</p>
+                            )}
                         </form>
                     </div>
                 )}
@@ -149,6 +193,9 @@ function LoginRegister(){
                             </input>
                             
                             <button type='submit'>Register</button>
+                            {registerError && (
+                                <p className="form-error">{registerError}</p>
+                            )}
                         </form>
                     </div>
                 )}

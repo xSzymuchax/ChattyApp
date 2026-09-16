@@ -1,14 +1,19 @@
-import { useEffect, useState } from 'react';
-import { getUserById, updateUserById } from '../../api/user';
+import { useEffect, useRef, useState } from 'react';
+import { getUserById, updateUserAvatar, updateUserById } from '../../api/user';
 import { useAuth } from '../../auth/AuthContext'
+import UserAvatar from '../UserAvatar';
 import './ProfileDisplay.css'
 
 
 function ProfileDisplay() {
     const {logout, userId} = useAuth();
+    const fileInputRef = useRef(null);
     const [username, setUsername] = useState('');
     const [description, setDescription] = useState('');
+    const [avatarVersion, setAvatarVersion] = useState('');
+    const [hasAvatar, setHasAvatar] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
     useEffect(() => {
         const loadProfile = async () => {
@@ -20,6 +25,8 @@ function ProfileDisplay() {
                 const response = await getUserById(userId);
                 setUsername(response.data.username ?? '');
                 setDescription(response.data.description ?? '');
+                setAvatarVersion(response.data.updatedAt ?? '');
+                setHasAvatar(Boolean(response.data.hasAvatar));
             } catch (error) {
                 console.log(error);
             }
@@ -49,6 +56,31 @@ function ProfileDisplay() {
         }
     };
 
+    const handleChoosePfp = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleAvatarSelected = async (event) => {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+
+        if (!file || !userId || isUploadingAvatar) {
+            return;
+        }
+
+        setIsUploadingAvatar(true);
+
+        try {
+            const response = await updateUserAvatar(userId, file);
+            setAvatarVersion(response.data.updatedAt ?? Date.now().toString());
+            setHasAvatar(true);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setIsUploadingAvatar(false);
+        }
+    };
+
     return (
         <div className='profile-display'>
             <form onSubmit={handleSave}>
@@ -71,7 +103,31 @@ function ProfileDisplay() {
                 />
 
                 <label htmlFor='pfp'>PFP select</label>
-                <button type='button' disabled>Choose PFP</button>
+                <div className="pfp-row">
+                    <div className="profile-picture">
+                        <UserAvatar
+                            userId={userId}
+                            username={username}
+                            hasAvatar={hasAvatar}
+                            version={avatarVersion}
+                        />
+                    </div>
+                    <input
+                        id="pfp"
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        hidden
+                        onChange={handleAvatarSelected}
+                    />
+                    <button
+                        type="button"
+                        onClick={handleChoosePfp}
+                        disabled={isUploadingAvatar}
+                    >
+                        Choose PFP
+                    </button>
+                </div>
 
                 <br></br>
                 <br></br>

@@ -22,3 +22,7 @@ export const login = (email, password) => {
     )
 }
 
+export const refreshSession = () => {
+    return authApi.post('/refresh');
+}
+

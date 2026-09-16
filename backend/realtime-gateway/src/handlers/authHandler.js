@@ -7,7 +7,7 @@ function handleAuth(ws, data) {
     const userId = decodeUserId(data.token);
 
     if (!userId) {
-        ws.close();
+        ws.close(4001, "Unauthorized");
         return;
     }
 

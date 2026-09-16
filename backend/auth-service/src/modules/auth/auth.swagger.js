@@ -75,7 +75,26 @@ registry.registerPath({
                 },
             },
         },
-        404: errorContent("User not found."),
+        401: errorContent("Invalid credentials."),
+        500: errorContent("Internal server error."),
+    },
+});
+
+registry.registerPath({
+    method: "post",
+    path: "/refresh",
+    tags: ["Auth"],
+    summary: "Issue a new JWT while the current token is still valid.",
+    responses: {
+        200: {
+            description: "New JWT for the authenticated user.",
+            content: {
+                "application/json": {
+                    schema: TokenResponseDto,
+                },
+            },
+        },
+        401: errorContent("Invalid or expired token."),
         500: errorContent("Internal server error."),
     },
 });

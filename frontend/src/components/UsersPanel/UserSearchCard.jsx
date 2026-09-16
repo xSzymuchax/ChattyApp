@@ -1,6 +1,7 @@
 import { createChat, findChatBetweenUsers, getUserChats } from '../../api/chat';
 import { useAuth } from '../../auth/AuthContext';
-import './UserSearchCard.css'
+import UserAvatar from '../UserAvatar';
+import './UserSearchCard.css';
 
 function UserSearchCard({userData, getChatWithUser, onChatSelected, onChatReady}){
     const { userId } = useAuth();
@@ -44,7 +45,12 @@ function UserSearchCard({userData, getChatWithUser, onChatSelected, onChatReady}
     return (
         <div className="user-search-card" onClick={handleClick}>
             <div className="profile-picture">
-                <image />
+                <UserAvatar
+                    userId={userData.id}
+                    username={userData.username}
+                    hasAvatar={userData.hasAvatar}
+                    version={userData.updatedAt}
+                />
             </div>
 
             <div className="text-data">

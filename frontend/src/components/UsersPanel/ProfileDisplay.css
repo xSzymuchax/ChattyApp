@@ -45,6 +45,23 @@
     opacity: 0.7;
 }
 
+.pfp-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.profile-display .profile-picture {
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid var(--accent-dark);
+    background-color: var(--bg-black);
+}
+
 .profile-display button {
     background-color: var(--accent-soft);
     color: var(--accent);

@@ -7,14 +7,15 @@ import {
     useCallback
 } from "react";
 
-import { useAuth } from "../auth/AuthContext";
+import { isTokenValid, useAuth } from "../auth/AuthContext";
 import { realtimeSocketUrl } from "../config/endpoints";
 
 const WebSocketContext = createContext(null);
 const MAX_RECONNECT_DELAY_MS = 30000;
+const AUTH_FAILURE_CLOSE_CODE = 4001;
 
 export function WebSocketProvider({ children }) {
-    const { token } = useAuth();
+    const { token, userId, logout } = useAuth();
     const [socket, setSocket] = useState(null);
     const socketRef = useRef(null);
     const listenersRef = useRef(new Set());
@@ -35,7 +36,14 @@ export function WebSocketProvider({ children }) {
     const connect = useCallback(() => {
         const currentToken = tokenRef.current;
 
-        if (!currentToken) {
+        if (!isTokenValid(currentToken)) {
+            shouldReconnectRef.current = false;
+            clearReconnectTimeout();
+
+            if (currentToken) {
+                logout();
+            }
+
             return;
         }
 
@@ -67,7 +75,14 @@ export function WebSocketProvider({ children }) {
         };
 
         newSocket.onmessage = (event) => {
-            const message = JSON.parse(event.data);
+            let message;
+
+            try {
+                message = JSON.parse(event.data);
+            } catch (error) {
+                console.error("WebSocket message parse error:", error);
+                return;
+            }
 
             console.log("WebSocket message:", message.type);
 
@@ -80,7 +95,7 @@ export function WebSocketProvider({ children }) {
             console.error("WebSocket error:", error);
         };
 
-        newSocket.onclose = () => {
+        newSocket.onclose = (event) => {
             console.log("WebSocket disconnected");
 
             if (socketRef.current === newSocket) {
@@ -88,7 +103,14 @@ export function WebSocketProvider({ children }) {
                 setSocket(null);
             }
 
-            if (!shouldReconnectRef.current || !tokenRef.current) {
+            if (event.code === AUTH_FAILURE_CLOSE_CODE) {
+                shouldReconnectRef.current = false;
+                clearReconnectTimeout();
+                logout();
+                return;
+            }
+
+            if (!shouldReconnectRef.current || !isTokenValid(tokenRef.current)) {
                 return;
             }
 
@@ -102,7 +124,7 @@ export function WebSocketProvider({ children }) {
                 connect();
             }, delay);
         };
-    }, []);
+    }, [logout]);
 
     useEffect(() => {
         shouldReconnectRef.current = Boolean(token);
@@ -131,7 +153,7 @@ export function WebSocketProvider({ children }) {
                 socketRef.current = null;
             }
         };
-    }, [token, connect]);
+    }, [userId, connect]);
 
     const subscribeToMessages = useCallback((listener) => {
         listenersRef.current.add(listener);

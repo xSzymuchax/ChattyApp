@@ -5,6 +5,8 @@ const checkAuth = require("../../middleware/auth");
 const router = express.Router();
 
 router.get("/", controller.getUsers);
+router.get("/:id/avatar", controller.getAvatar);
+router.put("/:id/avatar", checkAuth, controller.handleAvatarUpload, controller.updateAvatar);
 router.get("/:id", controller.getUser);
 router.post("/", controller.createUser);
 router.put("/:id", checkAuth, controller.updateUser);

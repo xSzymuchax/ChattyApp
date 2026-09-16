@@ -1,5 +1,7 @@
 const userService = require("./user.service");
+const { processAvatar } = require("../../util/avatar");
 const { UniqueConstraintError } = require("sequelize");
+const handleAvatarUpload = require("../../middleware/avatarUpload");
 
 const getUsers = async (req, res) => {
     try{
@@ -60,6 +62,61 @@ const getUser = async (req, res) => {
     } catch (error){
         console.log(error);
         res.status(500).json({message: "Internal server error."});
+    }
+};
+
+const getAvatar = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!id || Number.isNaN(id) || id <= 0)
+            return res.status(400).json({ message: "Bad request." });
+
+        const result = await userService.getUserAvatar(id);
+
+        if (result?.error === "not_found")
+            return res.status(404).json({ message: "User not found." });
+
+        if (result?.error === "no_avatar")
+            return res.status(404).json({ message: "Avatar not found." });
+
+        const buffer = Buffer.isBuffer(result.buffer)
+            ? result.buffer
+            : Buffer.from(result.buffer);
+
+        res.setHeader("Content-Type", "image/webp");
+        res.setHeader("Cache-Control", "private, max-age=60");
+        return res.status(200).send(buffer);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal server error." });
+    }
+};
+
+const updateAvatar = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.userId;
+
+        if (id != userId)
+            return res.status(403).json({ message: "Access denied." });
+
+        if (!id || Number.isNaN(id) || id <= 0)
+            return res.status(400).json({ message: "Bad request." });
+
+        if (!req.file?.buffer)
+            return res.status(400).json({ message: "Bad request." });
+
+        const avatar = await processAvatar(req.file.buffer);
+        const result = await userService.updateUserAvatar(id, avatar);
+
+        if (!result)
+            return res.status(404).json({ message: "User not found." });
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal server error." });
     }
 };
 
@@ -137,6 +194,9 @@ module.exports = {
     createUser,
     getUsers,
     getUser,
+    getAvatar,
+    handleAvatarUpload,
+    updateAvatar,
     updateUser,
     deleteUser,
     checkUserExistByEmail

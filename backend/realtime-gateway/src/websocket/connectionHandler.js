@@ -6,6 +6,7 @@ const {
     handleGameLeave,
     handleGameMove,
 } = require('../handlers/gameHandler');
+const { removeConnection } = require('./connectionManager');
 
 function handleConnection(ws) {
     console.log('New Connection!');
@@ -61,6 +62,7 @@ function handleConnection(ws) {
 
     ws.on('close', () => {
         clearTimeout(authTimeout);
+        removeConnection(ws.userId, ws);
 
         console.log('WS disconnected');
     });

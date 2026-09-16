@@ -1,0 +1,80 @@
+.link-warning-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.55);
+}
+
+.link-warning-modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(420px, calc(100% - 40px));
+    padding: 20px;
+    background-color: var(--bg-surface);
+    color: var(--text);
+    border: 2px solid var(--border);
+    border-radius: 20px;
+}
+
+.link-warning-modal h2 {
+    margin: 0 0 15px;
+    font-size: 20px;
+}
+
+.link-warning-text {
+    margin: 0 0 15px;
+    color: var(--text-muted);
+}
+
+.link-warning-url {
+    margin: 0 0 20px;
+    padding: 10px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    background-color: var(--bg-black);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--accent);
+    font-weight: bold;
+}
+
+.link-warning-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.link-warning-cancel,
+.link-warning-confirm {
+    min-width: 90px;
+    height: 36px;
+    padding: 0 15px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+.link-warning-cancel {
+    background-color: var(--bg-elevated);
+    color: var(--text);
+    border: 2px solid var(--border);
+}
+
+.link-warning-confirm {
+    background-color: var(--accent);
+    color: var(--accent-contrast);
+    border: none;
+}
+
+.link-warning-cancel:hover {
+    background-color: var(--surface-hover);
+}
+
+.link-warning-confirm:hover {
+    background-color: var(--accent-hover);
+}

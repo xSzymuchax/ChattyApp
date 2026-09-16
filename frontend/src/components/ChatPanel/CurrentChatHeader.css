@@ -22,6 +22,7 @@
     border-radius: 10px;
     border: 1px solid var(--accent-dark);
     flex-shrink: 0;
+    overflow: hidden;
 }
 
 .online-mark {

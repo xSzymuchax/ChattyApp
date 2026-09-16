@@ -26,6 +26,8 @@
     margin-right: 10px;
     border-radius: 10px;
     border: 1px solid var(--accent-dark);
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
 .user-search-card > .text-data {

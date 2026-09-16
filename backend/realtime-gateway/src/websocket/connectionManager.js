@@ -8,7 +8,7 @@ function toUserId(userId) {
 function addConnection(userId, ws) {
     const id = toUserId(userId);
 
-    if (!id)
+    if (!id || ws.readyState !== ws.OPEN)
         return;
 
     ws.userId = id;

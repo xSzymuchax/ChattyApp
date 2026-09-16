@@ -3,9 +3,14 @@
 }
 
 :80 {
-	encode gzip
+	handle /sounds/* {
+		root * /srv
+		header Cache-Control "public, max-age=86400"
+		file_server
+	}
 
 	handle_path /api/* {
+		encode gzip
 		reverse_proxy api-gateway:3000
 	}
 
@@ -14,6 +19,7 @@
 	}
 
 	handle {
+		encode gzip
 		root * /srv
 		try_files {path} /index.html
 		file_server

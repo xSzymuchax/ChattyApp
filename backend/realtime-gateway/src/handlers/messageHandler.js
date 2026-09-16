@@ -26,9 +26,10 @@ async function handleMessage(ws, data) {
 
         if (response.status === 200) {
             sendToUser(
-                response.data.recipientId, 
-                response.data.message, 
-                'message');
+                response.data.recipientId,
+                response.data.message,
+                "message"
+            );
         }
     
     } catch (error) {

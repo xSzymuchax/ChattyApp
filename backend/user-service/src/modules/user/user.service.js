@@ -23,6 +23,14 @@ const userService = {
         return userRepository.updateUser(id, data);
     },
 
+    async getUserAvatar(id) {
+        return userRepository.getUserAvatar(id);
+    },
+
+    async updateUserAvatar(id, avatar) {
+        return userRepository.updateUserAvatar(id, avatar);
+    },
+
     async deleteUser(id) {
         return userRepository.deleteUser(id);
     },

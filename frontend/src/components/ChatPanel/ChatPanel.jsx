@@ -10,7 +10,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { useSocket } from '../../websocket/WebSocketContext';
 
 
-function ChatPanel({chatId, onOpenGames, onOpponentChange}) {
+function ChatPanel({chatId, onOpenGames, onOpponentChange, onChatActivity}) {
     const { userId } = useAuth();
     const [otherUser, setOtherUser] = useState({});
     const [chatMessages, setChatMessages] = useState([]);
@@ -74,7 +74,7 @@ function ChatPanel({chatId, onOpenGames, onOpponentChange}) {
 
             const newMessage = message.message;
 
-            if (newMessage.chatId !== chatId) {
+            if (Number(newMessage.chatId) !== Number(chatId)) {
                 return;
             }
 
@@ -92,11 +92,17 @@ function ChatPanel({chatId, onOpenGames, onOpponentChange}) {
             ...prev,
             message
         ]);
+        onChatActivity?.(message);
     }
     
     return(
         <div className="chat-panel">
-            <CurrentChatHeader chatName={otherUser.username}/>
+            <CurrentChatHeader
+                chatName={otherUser.username}
+                userId={otherUser.id}
+                hasAvatar={otherUser.hasAvatar}
+                version={otherUser.updatedAt}
+            />
             <ChatContent chatMessages={chatMessages}/>
             <div className="chat-composer">
                 <button
