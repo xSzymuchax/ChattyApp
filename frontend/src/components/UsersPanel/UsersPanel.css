@@ -73,6 +73,11 @@
     flex-direction: column;
 }
 
+.users-list-display > *:not(.list-empty),
+.chats-list-display > *:not(.list-empty) {
+    flex-shrink: 0;
+}
+
 .list-empty {
     margin: 0;
     flex: 1;
