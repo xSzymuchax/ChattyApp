@@ -13,7 +13,11 @@ export const applyMessageToChatList = (chats, message) => {
         return {
             ...chat,
             lastMessageId: message.id ?? chat.lastMessageId,
-            lastMessageContent: message.content,
+            lastMessageContent: message.attachment
+                ? (message.attachment.kind === "image"
+                    ? "Image"
+                    : message.attachment.name)
+                : message.content,
             lastMessageSenderId: message.senderId,
             lastMessageCreatedAt: message.createdAt ?? new Date().toISOString(),
         };

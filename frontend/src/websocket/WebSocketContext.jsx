@@ -155,6 +155,21 @@ export function WebSocketProvider({ children }) {
         };
     }, [userId, connect]);
 
+    useEffect(() => {
+        const currentSocket = socketRef.current;
+
+        if (!token || !currentSocket || currentSocket.readyState !== WebSocket.OPEN) {
+            return;
+        }
+
+        currentSocket.send(
+            JSON.stringify({
+                type: "auth",
+                token,
+            })
+        );
+    }, [token]);
+
     const subscribeToMessages = useCallback((listener) => {
         listenersRef.current.add(listener);
 

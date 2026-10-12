@@ -2,9 +2,17 @@
     background-color: var(--bg-panel);
     min-height: 0;
     flex: 1;
-    align-content: flex-end;
-    overflow: scroll;
-    scrollbar-width: none;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
     overflow-x: hidden;
+    overflow-anchor: none;
+    scrollbar-width: none;
     padding-bottom: 8px;
+}
+
+.chat-content-spacer {
+    flex: 1 1 auto;
+    min-height: 0;
+    pointer-events: none;
 }

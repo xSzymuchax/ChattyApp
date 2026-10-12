@@ -63,6 +63,9 @@ services:
       DATABASE_HOST: postgres
       DATABASE_PORT: 5432
       REALTIME_GATEWAY_URL: http://realtime-gateway:3300
+      UPLOAD_DIR: /data/uploads
+    volumes:
+      - chat_uploads:/data/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -118,3 +121,4 @@ services:
 
 volumes:
   postgres_data:
+  chat_uploads:

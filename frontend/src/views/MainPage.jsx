@@ -10,9 +10,21 @@ function MainPage() {
     const [opponent, setOpponent] = useState(null);
     const [gamesPanelVisible, setGamesPanelVisible] = useState(false);
     const [lastMessageEvent, setLastMessageEvent] = useState(null);
+    const [sentChatMessage, setSentChatMessage] = useState(null);
+    const [invitationsTabToken, setInvitationsTabToken] = useState(0);
 
     const handleChatActivity = useCallback((message) => {
         setLastMessageEvent(message);
+    }, []);
+
+    const handleInviteChatMessage = useCallback((message) => {
+        setLastMessageEvent(message);
+        setSentChatMessage(message);
+    }, []);
+
+    const openInvitations = useCallback(() => {
+        setGamesPanelVisible(true);
+        setInvitationsTabToken((token) => token + 1);
     }, []);
 
     useIncomingMessageSound();
@@ -22,6 +34,7 @@ function MainPage() {
             <AppLayout
                 usersPanel={
                     <UsersPanel
+                        selectedChatId={selectedChatId}
                         onChatSelected={setSelectedChatId}
                         lastMessageEvent={lastMessageEvent}
                     />
@@ -30,8 +43,10 @@ function MainPage() {
                     <ChatPanel
                         chatId={selectedChatId}
                         onOpenGames={() => setGamesPanelVisible(true)}
+                        onOpenInvitations={openInvitations}
                         onOpponentChange={setOpponent}
                         onChatActivity={handleChatActivity}
+                        sentChatMessage={sentChatMessage}
                     />
                 }
                 gamesPanel={
@@ -39,6 +54,9 @@ function MainPage() {
                         visible={gamesPanelVisible}
                         onToggle={() => setGamesPanelVisible((visible) => !visible)}
                         opponent={opponent}
+                        chatId={selectedChatId}
+                        invitationsTabToken={invitationsTabToken}
+                        onChatMessage={handleInviteChatMessage}
                     />
                 }>
             </AppLayout>    

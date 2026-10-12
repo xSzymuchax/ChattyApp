@@ -50,6 +50,21 @@
     color: var(--bg-black);
 }
 
+.tab-selector .chats-list-button {
+    position: relative;
+}
+
+.chats-tab-unread-dot {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #ff3b30;
+    pointer-events: none;
+}
+
 .content-display {
     background-color: var(--bg-surface);
     width: 100%vh;

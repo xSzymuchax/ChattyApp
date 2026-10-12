@@ -17,8 +17,12 @@ async function handleMessage(ws, data) {
         const response = await axios.post(
             `${process.env.CHAT_SERVICE_URL}/${data.chatId}/message`,
             {
-                senderId: ws.userId,
                 content: data.content
+            },
+            {
+                headers: ws.token
+                    ? { Authorization: `Bearer ${ws.token}` }
+                    : {},
             }
         );
 

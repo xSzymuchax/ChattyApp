@@ -1,4 +1,5 @@
 const {Op} = require('sequelize');
+const { lastMessagePreview } = require("../../util/messageView");
 
 const createChatRepository = (Chat, Message) => ({
     async createChat(data) {
@@ -22,13 +23,17 @@ const createChatRepository = (Chat, Message) => ({
         return Message.create(data);
     },
 
+    async getMessageById(id) {
+        return Message.findByPk(id);
+    },
+
     async getMessagesByRange(chatId, start, end) {
         const messages = await Message.findAll({
             where: {
                 chatId,
             },
             order: [["id", "DESC"]],
-            offset: start-1,
+            offset: start,
             limit: end - start,
         });
 
@@ -70,7 +75,7 @@ const createChatRepository = (Chat, Message) => ({
                 const lastMessage = lastMessageByChatId.get(Number(chat.id));
 
                 json.lastMessageId = lastMessage?.id ?? null;
-                json.lastMessageContent = lastMessage?.content ?? null;
+                json.lastMessageContent = lastMessagePreview(lastMessage);
                 json.lastMessageSenderId = lastMessage?.senderId ?? null;
                 json.lastMessageCreatedAt = lastMessage?.createdAt ?? null;
 

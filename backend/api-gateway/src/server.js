@@ -69,7 +69,9 @@ app.use(
     '/chat',
     createProxyMiddleware({
         target: process.env.CHAT_SERVICE_URL,
-        changeOrigin: true
+        changeOrigin: true,
+        timeout: 180000,
+        proxyTimeout: 180000,
     })
 );
 

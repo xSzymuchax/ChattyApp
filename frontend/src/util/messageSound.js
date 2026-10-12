@@ -1,16 +1,22 @@
-let incomingMessageSound = null;
+const soundPlayers = new Map();
 
-const getIncomingMessageSound = () => {
-    if (!incomingMessageSound) {
-        incomingMessageSound = new Audio("/sounds/messageReceived.mp3");
-        incomingMessageSound.preload = "auto";
+const playSound = (src) => {
+    let sound = soundPlayers.get(src);
+
+    if (!sound) {
+        sound = new Audio(src);
+        sound.preload = "auto";
+        soundPlayers.set(src, sound);
     }
 
-    return incomingMessageSound;
+    sound.currentTime = 0;
+    sound.play().catch(() => {});
 };
 
 export const playIncomingMessageSound = () => {
-    const sound = getIncomingMessageSound();
-    sound.currentTime = 0;
-    sound.play().catch(() => {});
+    playSound("/sounds/messageReceived.mp3");
+};
+
+export const playGameInviteSound = () => {
+    playSound("/sounds/gameInvite.mp3");
 };

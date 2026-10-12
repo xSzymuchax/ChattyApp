@@ -5,7 +5,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { formatLastMessageTime } from '../../util/chatList';
 import UserAvatar from '../UserAvatar';
 
-function OpenChatCard({chatData, onChatSelected}) {
+function OpenChatCard({chatData, unread = false, onChatSelected}) {
     const [chatWithUser, setChatWithUser] = useState({});
     const {userId} = useAuth();
     
@@ -44,8 +44,10 @@ function OpenChatCard({chatData, onChatSelected}) {
     };
     
     return (
-        <div className="open-chat-card"
-             onClick={handleClick}>
+        <div
+            className={`open-chat-card${unread ? ' unread' : ''}`}
+            onClick={handleClick}
+        >
             <div className="profile-picture">
                 <UserAvatar
                     userId={chatWithUser.id}

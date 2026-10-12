@@ -1,0 +1,21 @@
+.image-preview-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.image-preview {
+    max-width: min(960px, calc(100vw - 40px));
+    max-height: calc(100vh - 40px);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border: 2px solid var(--accent-dark);
+    border-radius: 12px;
+    background-color: var(--bg-panel);
+}

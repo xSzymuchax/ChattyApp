@@ -14,12 +14,13 @@ import { useSocket } from '../../websocket/WebSocketContext';
 import { applyMessageToChatList, sortChatsByLastMessage } from '../../util/chatList';
 
 
-function UsersPanel({onChatSelected, lastMessageEvent}) {  
+function UsersPanel({selectedChatId, onChatSelected, lastMessageEvent}) {  
     const {userId} = useAuth();
     const {subscribeToMessages} = useSocket();
     const [activeView, setActiveView] = useState('chatsList');
     const [foundUsers, setFoundUsers] = useState([]);
     const [foundChats, setFoundChats] = useState([]);
+    const [unreadChatIds, setUnreadChatIds] = useState(() => new Set());
 
     const getMatchingUsers = async (username) => {
         const query = username?.trim();
@@ -70,10 +71,30 @@ function UsersPanel({onChatSelected, lastMessageEvent}) {
     };
 
     useEffect(() => {
+        setUnreadChatIds(new Set());
+
         if (userId) {
             loadChats();
         }
     }, [userId]);
+
+    useEffect(() => {
+        if (!selectedChatId) {
+            return;
+        }
+
+        setUnreadChatIds((prev) => {
+            const chatId = Number(selectedChatId);
+
+            if (!prev.has(chatId)) {
+                return prev;
+            }
+
+            const next = new Set(prev);
+            next.delete(chatId);
+            return next;
+        });
+    }, [selectedChatId]);
 
     useEffect(() => {
         if (!lastMessageEvent) {
@@ -91,12 +112,37 @@ function UsersPanel({onChatSelected, lastMessageEvent}) {
             }
 
             if (payload.type === "message") {
-                setFoundChats((prev) => applyMessageToChatList(prev, payload.message));
+                const message = payload.message;
+                setFoundChats((prev) => applyMessageToChatList(prev, message));
+
+                if (Number(message?.senderId) === Number(userId)) {
+                    return;
+                }
+
+                if (Number(message?.chatId) === Number(selectedChatId)) {
+                    return;
+                }
+
+                const chatId = Number(message?.chatId);
+
+                if (!chatId) {
+                    return;
+                }
+
+                setUnreadChatIds((prev) => {
+                    if (prev.has(chatId)) {
+                        return prev;
+                    }
+
+                    const next = new Set(prev);
+                    next.add(chatId);
+                    return next;
+                });
             }
         });
 
         return unsubscribe;
-    }, [subscribeToMessages]);
+    }, [subscribeToMessages, userId, selectedChatId]);
 
     const showUsers = () => {
         setActiveView('usersList');
@@ -118,8 +164,15 @@ function UsersPanel({onChatSelected, lastMessageEvent}) {
                 <button className='users-list-button' onClick={showUsers} aria-label="Users">
                     <i className="icon-group"></i>
                 </button>
-                <button className='chats-list-button' onClick={showChats} aria-label="Chats">
+                <button
+                    className='chats-list-button'
+                    onClick={showChats}
+                    aria-label={unreadChatIds.size > 0 ? "Chats, unread messages" : "Chats"}
+                >
                     <i className="icon-chat"></i>
+                    {unreadChatIds.size > 0 && (
+                        <span className="chats-tab-unread-dot" aria-hidden="true"></span>
+                    )}
                 </button>
                 <button className='profile-button' onClick={showProfile} aria-label="Profile">
                     <i className="icon-user"></i>
@@ -162,6 +215,7 @@ function UsersPanel({onChatSelected, lastMessageEvent}) {
                                     <OpenChatCard
                                     key={chat.id}
                                     chatData={chat}
+                                    unread={unreadChatIds.has(Number(chat.id))}
                                     onChatSelected={onChatSelected}></OpenChatCard>
                                 ))
                             )}

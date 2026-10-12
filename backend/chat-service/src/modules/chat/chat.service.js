@@ -1,5 +1,8 @@
 const { Chat, Message } = require("../../models");
 const createChatRepository = require("./chat.repository");
+const { serializeMessage } = require("../../util/messageView");
+const { processAttachment } = require("../../util/attachment");
+const { saveAttachment, readAttachment } = require("../../util/fileStore");
 const chatRepository = createChatRepository(Chat, Message);
 
 const normalizeUserIds = (firstUserId, secondUserId) => {
@@ -19,10 +22,10 @@ const isParticipant = (chat, senderId) => {
     );
 };
 
-const notifyChatCreated = (userId, chat) => {
+const notifyRealtime = (userId, type, message) => {
     const url = process.env.REALTIME_GATEWAY_URL;
 
-    if (!url || !userId || !chat) {
+    if (!url || !userId || !message) {
         return;
     }
 
@@ -31,14 +34,29 @@ const notifyChatCreated = (userId, chat) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             userId,
-            type: "chatCreated",
-            message: chat,
+            type,
+            message,
         }),
     }).catch(() => {});
 };
 
+const notifyChatCreated = (userId, chat) => {
+    notifyRealtime(userId, "chatCreated", chat);
+};
+
+const notifyRecipient = (userId, message) => {
+    notifyRealtime(userId, "message", message);
+};
+
 const chatService = {
-    async createChat(data) {
+    async createChat(data, requesterId) {
+        if (
+            Number(requesterId) !== Number(data.firstUserId) &&
+            Number(requesterId) !== Number(data.secondUserId)
+        ) {
+            return { error: "forbidden" };
+        }
+
         const { firstUserId, secondUserId } = normalizeUserIds(
             data.firstUserId,
             data.secondUserId
@@ -74,25 +92,95 @@ const chatService = {
                 ? Number(chat.secondUserId)
                 : Number(chat.firstUserId);
 
-        return { message, recipientId };
+        return { message: serializeMessage(message), recipientId };
     },
 
-    async getMessages(chatId, start, end) {
+    async createAttachment(chatId, { senderId, file }) {
         const chat = await chatRepository.getChatById(chatId);
 
-        if (!chat) return null;
+        if (!chat) return { error: "not_found" };
+
+        if (!isParticipant(chat, senderId)) return { error: "forbidden" };
+
+        if (!file?.buffer) return { error: "bad_request" };
+
+        const processed = await processAttachment(file);
+        const message = await chatRepository.createMessage({
+            chatId,
+            senderId,
+            content: processed.originalName,
+            attachmentName: processed.originalName,
+            attachmentMime: processed.mime,
+            attachmentSize: processed.size,
+            attachmentKind: processed.kind,
+        });
+
+        await saveAttachment(message.id, processed.buffer);
+
+        const recipientId =
+            Number(chat.firstUserId) === Number(senderId)
+                ? Number(chat.secondUserId)
+                : Number(chat.firstUserId);
+
+        const serialized = serializeMessage(message);
+        notifyRecipient(recipientId, serialized);
+
+        return { message: serialized, recipientId };
+    },
+
+    async getAttachment(chatId, messageId, userId) {
+        const chat = await chatRepository.getChatById(chatId);
+
+        if (!chat) return { error: "not_found" };
+
+        if (!isParticipant(chat, userId)) return { error: "forbidden" };
+
+        const message = await chatRepository.getMessageById(messageId);
+
+        if (!message || Number(message.chatId) !== Number(chatId) || !message.attachmentName) {
+            return { error: "not_found" };
+        }
+
+        const buffer = await readAttachment(message.id);
+
+        if (!buffer) return { error: "not_found" };
+
+        return {
+            buffer,
+            name: message.attachmentName,
+            mime: message.attachmentMime || "application/octet-stream",
+        };
+    },
+
+    async getMessages(chatId, start, end, requesterId) {
+        const chat = await chatRepository.getChatById(chatId);
+
+        if (!chat) return { error: "not_found" };
+
+        if (!isParticipant(chat, requesterId)) return { error: "forbidden" };
 
         if (start === end) return [];
 
-        return chatRepository.getMessagesByRange(chatId, start, end);
+        const messages = await chatRepository.getMessagesByRange(chatId, start, end);
+        return messages.map(serializeMessage);
     },
 
-    async getUserChats(userId) {
+    async getUserChats(userId, requesterId) {
+        if (Number(userId) !== Number(requesterId)) {
+            return { error: "forbidden" };
+        }
+
         return chatRepository.getUserChats(userId);
     },
 
-    async getChatById(id) {
-        return chatRepository.getChatById(id);
+    async getChatById(id, requesterId) {
+        const chat = await chatRepository.getChatById(id);
+
+        if (!chat) return null;
+
+        if (!isParticipant(chat, requesterId)) return { error: "forbidden" };
+
+        return chat;
     },
 };
 

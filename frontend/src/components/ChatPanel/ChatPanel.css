@@ -35,6 +35,14 @@
     color: var(--text);
 }
 
+.composer-error {
+    margin: 0 10px 0 0;
+    color: var(--bg-black);
+    font-size: 12px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
 .chat-composer .message-sender {
     flex: 1;
     margin-top: 0;

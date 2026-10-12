@@ -21,6 +21,22 @@ const Message = (sequelize) => {
                 type: DataTypes.TEXT,
                 allowNull: false,
             },
+            attachmentName: {
+                type: DataTypes.STRING(255),
+                allowNull: true,
+            },
+            attachmentMime: {
+                type: DataTypes.STRING(127),
+                allowNull: true,
+            },
+            attachmentSize: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
+            },
+            attachmentKind: {
+                type: DataTypes.STRING(16),
+                allowNull: true,
+            },
         },
         {
             tableName: "messages",

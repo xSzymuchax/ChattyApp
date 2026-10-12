@@ -1,3 +1,5 @@
+import { GAME_INVITE_CTA } from "./gameInviteMessage";
+
 const URL_PATTERN = /https?:\/\/[^\s<>"']+|www\.[^\s<>"']+/gi;
 
 const trailingPunctuation = /[.,;:!?)]+$/;
@@ -35,6 +37,45 @@ export const splitMessageLinks = (text) => {
     }
 
     return parts;
+};
+
+const splitInviteCta = (part) => {
+    if (part.type !== "text") {
+        return [part];
+    }
+
+    const pieces = [];
+    let remaining = part.value;
+    let index = remaining.indexOf(GAME_INVITE_CTA);
+
+    while (index !== -1) {
+        if (index > 0) {
+            pieces.push({
+                type: "text",
+                value: remaining.slice(0, index),
+            });
+        }
+
+        pieces.push({
+            type: "invite-cta",
+            value: GAME_INVITE_CTA,
+        });
+        remaining = remaining.slice(index + GAME_INVITE_CTA.length);
+        index = remaining.indexOf(GAME_INVITE_CTA);
+    }
+
+    if (remaining) {
+        pieces.push({
+            type: "text",
+            value: remaining,
+        });
+    }
+
+    return pieces;
+};
+
+export const splitMessageContent = (text) => {
+    return splitMessageLinks(text).flatMap(splitInviteCta);
 };
 
 export const toSafeHttpUrl = (raw) => {

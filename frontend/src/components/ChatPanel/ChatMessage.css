@@ -58,3 +58,61 @@
 .chat-message.own .message-link:hover {
     color: var(--bg-black);
 }
+
+.chat-message.has-image {
+    padding: 10px;
+}
+
+.chat-image-button {
+    display: block;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.chat-image,
+.chat-image-placeholder {
+    display: block;
+    max-width: 240px;
+    max-height: 240px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+.chat-image-placeholder {
+    width: 160px;
+    height: 120px;
+    background-color: var(--bg-black);
+}
+
+.chat-file-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 240px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+}
+
+.chat-file-icon {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+.chat-file-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

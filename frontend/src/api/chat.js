@@ -37,3 +37,19 @@ export const getMessagesFromChat = (chatId, start, end) => {
     });
 }
 
+export const uploadChatAttachment = (chatId, file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return chatApi.post(`/chat/${chatId}/attachment`, formData, {
+        timeout: 180000,
+    });
+}
+
+export const getChatAttachment = (chatId, messageId) => {
+    return chatApi.get(`/chat/${chatId}/messages/${messageId}/attachment`, {
+        responseType: "blob",
+        timeout: 180000,
+    });
+}
+

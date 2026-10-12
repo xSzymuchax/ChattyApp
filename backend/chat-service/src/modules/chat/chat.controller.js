@@ -16,10 +16,18 @@ const createChat = async (req, res) => {
         const firstUserId = parsePositiveInt(req.body.firstUserId);
         const secondUserId = parsePositiveInt(req.body.secondUserId);
 
-        if (!firstUserId || !secondUserId || firstUserId === secondUserId)
+        const requesterId = parsePositiveInt(req.user?.userId);
+
+        if (!firstUserId || !secondUserId || firstUserId === secondUserId || !requesterId)
             return res.status(400).json({message: "Bad request."});
 
-        const result = await chatService.createChat({ firstUserId, secondUserId });
+        const result = await chatService.createChat(
+            { firstUserId, secondUserId },
+            requesterId
+        );
+
+        if (result?.error === "forbidden")
+            return res.status(403).json({message: "Access denied."});
 
         if (!result)
             return res.status(409).json({message: "Chat between those users already exists."});
@@ -34,7 +42,7 @@ const createChat = async (req, res) => {
 const createMessage = async (req, res) => {
     try {
         const chatId = parsePositiveInt(req.params.id);
-        const senderId = parsePositiveInt(req.body.senderId);
+        const senderId = parsePositiveInt(req.user?.userId);
         const { content } = req.body;
 
         console.log(chatId, senderId, content);
@@ -60,18 +68,87 @@ const createMessage = async (req, res) => {
     }
 };
 
+const createAttachment = async (req, res) => {
+    try {
+        const chatId = parsePositiveInt(req.params.id);
+        const senderId = parsePositiveInt(req.user?.userId);
+
+        if (!chatId || !senderId || !req.file)
+            return res.status(400).json({message: "Bad request."});
+
+        const result = await chatService.createAttachment(chatId, {
+            senderId,
+            file: req.file,
+        });
+
+        if (result.error === "not_found")
+            return res.status(404).json({message: "Chat not found."});
+
+        if (result.error === "forbidden")
+            return res.status(403).json({message: "Access denied."});
+
+        if (result.error === "bad_request")
+            return res.status(400).json({message: "Bad request."});
+
+        res.status(200).json({
+            message: result.message,
+            recipientId: result.recipientId,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message: "Internal server error."});
+    }
+};
+
+const getAttachment = async (req, res) => {
+    try {
+        const chatId = parsePositiveInt(req.params.id);
+        const messageId = parsePositiveInt(req.params.messageId);
+        const userId = parsePositiveInt(req.user?.userId);
+
+        if (!chatId || !messageId || !userId)
+            return res.status(400).json({message: "Bad request."});
+
+        const result = await chatService.getAttachment(chatId, messageId, userId);
+
+        if (result.error === "not_found")
+            return res.status(404).json({message: "Attachment not found."});
+
+        if (result.error === "forbidden")
+            return res.status(403).json({message: "Access denied."});
+
+        const buffer = Buffer.isBuffer(result.buffer)
+            ? result.buffer
+            : Buffer.from(result.buffer);
+
+        res.setHeader("Content-Type", result.mime);
+        res.setHeader(
+            "Content-Disposition",
+            `inline; filename*=UTF-8''${encodeURIComponent(result.name)}`
+        );
+        return res.status(200).send(buffer);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message: "Internal server error."});
+    }
+};
+
 const getMessages = async (req, res) => {
     try {
         const chatId = parsePositiveInt(req.params.id);
+        const requesterId = parsePositiveInt(req.user?.userId);
         const start = parseNonNegativeInt(req.body.start);
         const end = parseNonNegativeInt(req.body.end);
 
-        if (!chatId || start === null || end === null || start > end)
+        if (!chatId || !requesterId || start === null || end === null || start > end)
             return res.status(400).json({message: "Bad request."});
 
-        const result = await chatService.getMessages(chatId, start, end);
+        const result = await chatService.getMessages(chatId, start, end, requesterId);
 
-        if (!result)
+        if (result?.error === "forbidden")
+            return res.status(403).json({message: "Access denied."});
+
+        if (!result || result.error === "not_found")
             return res.status(404).json({message: "Chat not found."});
 
         res.status(200).json(result);
@@ -83,12 +160,16 @@ const getMessages = async (req, res) => {
 
 const getUserChats = async (req,res) => {
     try {
-        const chatId = parsePositiveInt(req.params.id);
+        const userId = parsePositiveInt(req.params.id);
+        const requesterId = parsePositiveInt(req.user?.userId);
 
-        if (!chatId)
+        if (!userId || !requesterId)
             return res.status(400).json({message: "Bad request."});
 
-        const result = await chatService.getUserChats(chatId);
+        const result = await chatService.getUserChats(userId, requesterId);
+
+        if (result?.error === "forbidden")
+            return res.status(403).json({message: "Access denied."});
 
         res.status(200).json(result);
     } catch (error) {
@@ -100,11 +181,15 @@ const getUserChats = async (req,res) => {
 const getChat = async (req, res) => {
     try {
         const chatId = parsePositiveInt(req.params.id);
+        const requesterId = parsePositiveInt(req.user?.userId);
 
-        if (!chatId)
+        if (!chatId || !requesterId)
             return res.status(400).json({message: "Bad request."});
 
-        const result = await chatService.getChatById(chatId);
+        const result = await chatService.getChatById(chatId, requesterId);
+
+        if (result?.error === "forbidden")
+            return res.status(403).json({message: "Access denied."});
 
         if (!result)
             return res.status(404).json({message: "Chat not found."});
@@ -119,6 +204,8 @@ const getChat = async (req, res) => {
 module.exports = {
     createChat,
     createMessage,
+    createAttachment,
+    getAttachment,
     getMessages,
     getUserChats,
     getChat

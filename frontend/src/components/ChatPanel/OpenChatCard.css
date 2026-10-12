@@ -10,12 +10,24 @@
     background-color: var(--bg-elevated);
     border: 1px solid var(--border);
     cursor: pointer;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .open-chat-card:hover {
     background-color: var(--surface-hover);
     border-color: var(--accent);
+}
+
+.open-chat-card.unread {
+    border-color: var(--accent);
+    box-shadow:
+        0 0 10px color-mix(in srgb, var(--accent) 55%, transparent),
+        0 0 20px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.open-chat-card.unread .last-message > span {
+    color: var(--text);
+    font-weight: 700;
 }
 
 .open-chat-card > .profile-picture {

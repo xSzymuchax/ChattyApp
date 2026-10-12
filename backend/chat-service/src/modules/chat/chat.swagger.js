@@ -137,6 +137,53 @@ registry.registerPath({
 
 registry.registerPath({
     method: "post",
+    path: "/{id}/attachment",
+    tags: ["Chat"],
+    summary: "Upload an attachment or image (max 50 MB). Images are compressed to WebP.",
+
+    request: {
+        params: IdParamsDto,
+    },
+
+    responses: {
+        200: {
+            description: "Created message and recipient user id.",
+            content: {
+                "application/json": {
+                    schema: CreateMessageResponseDto,
+                },
+            },
+        },
+        400: errorContent("Bad request."),
+        403: errorContent("Access denied."),
+        404: errorContent("Chat not found."),
+        500: errorContent("Internal server error."),
+    },
+});
+
+registry.registerPath({
+    method: "get",
+    path: "/{id}/messages/{messageId}/attachment",
+    tags: ["Chat"],
+    summary: "Download a message attachment.",
+
+    request: {
+        params: IdParamsDto,
+    },
+
+    responses: {
+        200: {
+            description: "Attachment file.",
+        },
+        400: errorContent("Bad request."),
+        403: errorContent("Access denied."),
+        404: errorContent("Attachment not found."),
+        500: errorContent("Internal server error."),
+    },
+});
+
+registry.registerPath({
+    method: "post",
     path: "/{id}/messages",
     tags: ["Chat"],
     summary: "Get the latest messages in a chat. start/end count from the newest message (start inclusive, end exclusive).",

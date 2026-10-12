@@ -1,24 +1,44 @@
-import { useEffect, useState } from 'react'
 import './ChatMessage.css'
 import { useAuth } from '../../auth/AuthContext';
-import { splitMessageLinks } from '../../util/messageLinks';
+import { splitMessageContent } from '../../util/messageLinks';
+import ChatAttachment from './ChatAttachment';
 
-function ChatMessage({sender_id, messageContent, onLinkClick}) {
-    const [isMyMessage, setIsMyMessage] = useState(false);
+function ChatMessage({chatId, message, onLinkClick, onOpenInvitations, onDownloadRequest, onImageClick}) {
     const {userId} = useAuth();
-
-    useEffect(() => {
-        setIsMyMessage(Number(sender_id) === Number(userId));
-    }, [sender_id, userId]);
-
-    const parts = splitMessageLinks(messageContent);
+    const senderId = message?.senderId;
+    const messageContent = message?.content;
+    const isMyMessage = Number(senderId) === Number(userId);
+    const attachment = message?.attachment;
+    const parts = splitMessageContent(attachment ? "" : messageContent);
+    const showText = !attachment && Boolean(messageContent);
 
     return (
         <div 
-        className={`chat-message ${(isMyMessage == true) ? 'own' : 'other'}`}>
-            {parts.length === 0
+        className={`chat-message ${isMyMessage ? 'own' : 'other'}${attachment?.kind === 'image' ? ' has-image' : ''}${attachment?.kind === 'file' ? ' has-file' : ''}`}>
+            {attachment && (
+                <ChatAttachment
+                    chatId={chatId}
+                    message={message}
+                    onDownloadRequest={onDownloadRequest}
+                    onImageClick={onImageClick}
+                />
+            )}
+            {showText && (parts.length === 0
                 ? messageContent
                 : parts.map((part, index) => {
+                    if (part.type === 'invite-cta') {
+                        return (
+                            <button
+                                key={index}
+                                type="button"
+                                className="message-link"
+                                onClick={() => onOpenInvitations?.()}
+                            >
+                                {part.value}
+                            </button>
+                        );
+                    }
+
                     if (part.type !== 'link') {
                         return <span key={index}>{part.value}</span>;
                     }
@@ -33,7 +53,7 @@ function ChatMessage({sender_id, messageContent, onLinkClick}) {
                             {part.value}
                         </button>
                     );
-                })}
+                }))}
         </div>
     )
 }
