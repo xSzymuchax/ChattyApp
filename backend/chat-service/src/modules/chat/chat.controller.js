@@ -5,16 +5,18 @@ const parsePositiveInt = (value) => {
     return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 };
 
-const parseNonNegativeInt = (value) => {
-    const parsed = Number(value);
-    return Number.isInteger(parsed) && parsed >= 0 ? parsed : null;
+const parseBodyInt = (value, minimum) => {
+    if (typeof value !== "number" || !Number.isInteger(value) || value < minimum)
+        return null;
+
+    return value;
 };
 
 const createChat = async (req, res) => {
     try {
         console.log(req.body);
-        const firstUserId = parsePositiveInt(req.body.firstUserId);
-        const secondUserId = parsePositiveInt(req.body.secondUserId);
+        const firstUserId = parseBodyInt(req.body.firstUserId, 1);
+        const secondUserId = parseBodyInt(req.body.secondUserId, 1);
 
         const requesterId = parsePositiveInt(req.user?.userId);
 
@@ -137,8 +139,8 @@ const getMessages = async (req, res) => {
     try {
         const chatId = parsePositiveInt(req.params.id);
         const requesterId = parsePositiveInt(req.user?.userId);
-        const start = parseNonNegativeInt(req.body.start);
-        const end = parseNonNegativeInt(req.body.end);
+        const start = parseBodyInt(req.body.start, 0);
+        const end = parseBodyInt(req.body.end, 0);
 
         if (!chatId || !requesterId || start === null || end === null || start > end)
             return res.status(400).json({message: "Bad request."});

@@ -148,6 +148,7 @@ function ChatPanel({chatId, onOpenGames, onOpenInvitations, onOpponentChange, on
                 ...prev,
                 newMessage
             ]);
+            setScrollToBottomToken((token) => token + 1);
         });
 
         return unsubscribe;

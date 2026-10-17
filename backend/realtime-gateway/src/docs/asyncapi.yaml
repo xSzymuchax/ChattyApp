@@ -126,12 +126,12 @@ components:
             description: Checkers uses from/to squares. Abalone uses marbles, dq and dr.
     ChatMessage:
       name: message
-      summary: A chat message for the recipient. Also produced by POST /notify.
+      summary: A text or attachment message for the other participant. Text is sent by the gateway after it stores the message. An upload is sent by chat-service through POST /notify.
       payload:
         $ref: "#/components/schemas/ServerFrame"
     ChatCreated:
       name: chatCreated
-      summary: A newly created chat for the other participant. Produced by POST /notify.
+      summary: A newly created chat for the participant who did not create it. Produced by chat-service through POST /notify.
       payload:
         $ref: "#/components/schemas/ServerFrame"
     GameInvite:

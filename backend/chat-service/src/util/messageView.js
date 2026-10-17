@@ -12,7 +12,6 @@ const serializeMessage = (message) => {
         senderId: json.senderId,
         content: json.content,
         createdAt: json.createdAt,
-        updatedAt: json.updatedAt,
         attachment: hasAttachment
             ? {
                 name: json.attachmentName,

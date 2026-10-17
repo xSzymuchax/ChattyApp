@@ -22,8 +22,28 @@ const isParticipant = (chat, senderId) => {
     );
 };
 
+const realtimeGatewayUrl = () => {
+    if (process.env.REALTIME_GATEWAY_URL)
+        return process.env.REALTIME_GATEWAY_URL;
+
+    if (process.env.NODE_ENV === "test")
+        return "";
+
+    return "http://localhost:3300";
+};
+
+const toPublicChat = (chat) => {
+    const json = typeof chat?.toJSON === "function" ? chat.toJSON() : chat;
+
+    return {
+        id: json.id,
+        firstUserId: json.firstUserId,
+        secondUserId: json.secondUserId,
+    };
+};
+
 const notifyRealtime = (userId, type, message) => {
-    const url = process.env.REALTIME_GATEWAY_URL;
+    const url = realtimeGatewayUrl();
 
     if (!url || !userId || !message) {
         return;
@@ -69,8 +89,14 @@ const chatService = {
 
         if (existingChat) return null;
 
-        const chat = await chatRepository.createChat({ firstUserId, secondUserId });
-        notifyChatCreated(data.secondUserId, chat.toJSON());
+        const created = await chatRepository.createChat({ firstUserId, secondUserId });
+        const chat = toPublicChat(created);
+        const otherUserId =
+            Number(requesterId) === Number(chat.firstUserId)
+                ? chat.secondUserId
+                : chat.firstUserId;
+
+        notifyChatCreated(otherUserId, chat);
         return chat;
     },
 
@@ -180,7 +206,7 @@ const chatService = {
 
         if (!isParticipant(chat, requesterId)) return { error: "forbidden" };
 
-        return chat;
+        return toPublicChat(chat);
     },
 };
 

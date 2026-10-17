@@ -6,4 +6,11 @@ const IdParamsDto =
     })
     .openapi("IdParams");
 
-module.exports = { IdParamsDto };
+const AttachmentParamsDto =
+    z.object({
+        id: z.string().openapi({example: "1"}),
+        messageId: z.string().openapi({example: "8"}),
+    })
+    .openapi("AttachmentParams");
+
+module.exports = { IdParamsDto, AttachmentParamsDto };

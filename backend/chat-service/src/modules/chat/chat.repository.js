@@ -1,13 +1,25 @@
 const {Op} = require('sequelize');
 const { lastMessagePreview } = require("../../util/messageView");
 
+const toPublicChat = (chat) => {
+    if (!chat) return null;
+
+    const json = typeof chat.toJSON === "function" ? chat.toJSON() : chat;
+
+    return {
+        id: json.id,
+        firstUserId: json.firstUserId,
+        secondUserId: json.secondUserId,
+    };
+};
+
 const createChatRepository = (Chat, Message) => ({
     async createChat(data) {
         return Chat.create(data);
     },
 
     async getChatById(id) {
-        return Chat.findByPk(id);
+        return toPublicChat(await Chat.findByPk(id));
     },
 
     async getChatByUserIds(firstUserId, secondUserId) {
@@ -71,15 +83,15 @@ const createChatRepository = (Chat, Message) => ({
 
         return chats
             .map((chat) => {
-                const json = chat.toJSON();
                 const lastMessage = lastMessageByChatId.get(Number(chat.id));
 
-                json.lastMessageId = lastMessage?.id ?? null;
-                json.lastMessageContent = lastMessagePreview(lastMessage);
-                json.lastMessageSenderId = lastMessage?.senderId ?? null;
-                json.lastMessageCreatedAt = lastMessage?.createdAt ?? null;
-
-                return json;
+                return {
+                    ...toPublicChat(chat),
+                    lastMessageId: lastMessage?.id ?? null,
+                    lastMessageContent: lastMessagePreview(lastMessage),
+                    lastMessageSenderId: lastMessage?.senderId ?? null,
+                    lastMessageCreatedAt: lastMessage?.createdAt ?? null,
+                };
             })
             .sort((a, b) => {
                 const aTime = Date.parse(a.lastMessageCreatedAt ?? "") || 0;

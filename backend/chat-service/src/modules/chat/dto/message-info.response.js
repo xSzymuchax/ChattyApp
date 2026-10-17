@@ -15,6 +15,7 @@ const MessageInfoResponseDto =
         chatId: z.int().openapi({example: 1}),
         senderId: z.int().openapi({example: 1}),
         content: z.string().openapi({example: "Hello!"}),
+        createdAt: z.string().openapi({example: "2026-09-15T15:04:00.000Z"}),
         attachment: AttachmentInfoDto.nullable().openapi({example: null}),
     })
     .openapi("MessageInfoResponse");
