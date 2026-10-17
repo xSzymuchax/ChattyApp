@@ -48,7 +48,7 @@ describe("AuthService", () => {
             expect(typeof token).toBe("string");
 
             expect(fetch).toHaveBeenCalledWith(
-                `${process.env.USER_SERVICE_URL}/user/userOfEmailActive`, {
+                `${process.env.USER_SERVICE_URL}/userOfEmailActive`, {
                 method: "post",
                 headers: {
                     'Content-Type': 'application/json',

@@ -75,6 +75,7 @@ registry.registerPath({
                 },
             },
         },
+        400: errorContent("Bad request."),
         401: errorContent("Invalid credentials."),
         500: errorContent("Internal server error."),
     },
