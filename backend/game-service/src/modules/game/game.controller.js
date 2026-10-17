@@ -5,6 +5,9 @@ const parsePositiveInt = (value) => {
     return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 };
 
+const parseBodyUserId = (value) =>
+    typeof value === "number" ? parsePositiveInt(value) : null;
+
 const parseRoomId = (value) => {
     if (typeof value !== "string" || !value.trim())
         return null;
@@ -14,8 +17,8 @@ const parseRoomId = (value) => {
 
 const createGameRoom = (req, res) => {
     try {
-        const firstUserId = parsePositiveInt(req.body.firstUserId);
-        const secondUserId = parsePositiveInt(req.body.secondUserId);
+        const firstUserId = parseBodyUserId(req.body.firstUserId);
+        const secondUserId = parseBodyUserId(req.body.secondUserId);
         const { gameName } = req.body;
 
         if (
@@ -88,7 +91,7 @@ const getInvitations = (req, res) => {
 const acceptInvitation = (req, res) => {
     try {
         const id = parseRoomId(req.params.id);
-        const userId = parsePositiveInt(req.body.userId);
+        const userId = parseBodyUserId(req.body.userId);
 
         if (!id || !userId)
             return res.status(400).json({ message: "Bad request." });
@@ -111,7 +114,7 @@ const acceptInvitation = (req, res) => {
 const leaveGame = (req, res) => {
     try {
         const id = parseRoomId(req.params.id);
-        const userId = parsePositiveInt(req.body.userId);
+        const userId = parseBodyUserId(req.body.userId);
 
         if (!id || !userId)
             return res.status(400).json({ message: "Bad request." });
@@ -134,7 +137,7 @@ const leaveGame = (req, res) => {
 const makeMove = (req, res) => {
     try {
         const id = parseRoomId(req.params.id);
-        const userId = parsePositiveInt(req.body.userId);
+        const userId = parseBodyUserId(req.body.userId);
         const { move } = req.body;
 
         if (!id || !userId || move === undefined)

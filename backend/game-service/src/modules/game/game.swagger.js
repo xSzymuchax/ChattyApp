@@ -214,7 +214,18 @@ registry.registerPath({
                 },
             },
         },
-        400: errorContent("Illegal move."),
+        400: {
+            description: "The body is invalid, or the rules reject the move.",
+            content: {
+                "application/json": {
+                    schema: ErrorResponseDto,
+                    examples: {
+                        badRequest: { value: { message: "Bad request." } },
+                        illegalMove: { value: { message: "Illegal move." } },
+                    },
+                },
+            },
+        },
         403: errorContent("Access denied."),
         404: errorContent("Game room not found."),
         500: errorContent("Internal server error."),
