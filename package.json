@@ -4,7 +4,7 @@
   "description": "Chatting web app.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm test --prefix backend/auth-service && npm test --prefix backend/user-service && npm test --prefix backend/chat-service && npm test --prefix backend/game-service",
     "predev": "docker compose -f backend/docker-compose.yml up -d --wait",
     "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
     "docker": "docker compose -f backend/docker-compose.yml up -d --wait"

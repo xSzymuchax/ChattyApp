@@ -1,7 +1,10 @@
 const express = require('express');
 const cors = require('cors');
+const swaggerUI = require('swagger-ui-express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 require('dotenv').config();
+
+const swaggerDoc = require('./config/swagger');
 
 const app = express();
 
@@ -48,6 +51,8 @@ const PORT = process.env.PORT || 3000;
 app.use(cors({
     origin: corsOrigin,
 }));
+
+app.use('/swagger', swaggerUI.serve, swaggerUI.setup(swaggerDoc));
 
 app.use(
     '/auth',

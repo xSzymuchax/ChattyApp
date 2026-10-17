@@ -1,0 +1,166 @@
+asyncapi: 2.6.0
+info:
+  title: Realtime gateway
+  version: 1.0.0
+  description: |
+    One WebSocket per browser session. The frontend dev server proxies `/ws` to this process.
+
+    After the socket opens, the client must send `auth` within 5 seconds. Without it the gateway closes the connection.
+    A token that does not verify closes the socket with code 4001 and reason `Unauthorized`.
+    A frame that is not JSON also closes the socket. An unknown `type` is ignored.
+
+    Frames sent by the gateway always have the shape `{ type, message }`.
+    Frames sent by the client keep their fields beside `type`.
+defaultContentType: application/json
+servers:
+  local:
+    url: localhost:3300
+    protocol: ws
+    description: Gateway process. The Vite dev server exposes it as `/ws`.
+channels:
+  /:
+    description: The WebSocket connection itself.
+    subscribe:
+      operationId: receiveClientFrame
+      summary: Frames sent by the client.
+      message:
+        oneOf:
+          - $ref: "#/components/messages/Auth"
+          - $ref: "#/components/messages/SendChatMessage"
+          - $ref: "#/components/messages/GameCreate"
+          - $ref: "#/components/messages/GameAccept"
+          - $ref: "#/components/messages/GameLeave"
+          - $ref: "#/components/messages/GameMove"
+    publish:
+      operationId: sendServerFrame
+      summary: Frames sent by the gateway.
+      message:
+        oneOf:
+          - $ref: "#/components/messages/ChatMessage"
+          - $ref: "#/components/messages/ChatCreated"
+          - $ref: "#/components/messages/GameInvite"
+          - $ref: "#/components/messages/GameUpdate"
+          - $ref: "#/components/messages/GameEnded"
+          - $ref: "#/components/messages/GameError"
+components:
+  messages:
+    Auth:
+      name: auth
+      summary: Bind the socket to the user in the JWT. Required within 5 seconds of connect.
+      payload:
+        type: object
+        required: [type, token]
+        properties:
+          type:
+            type: string
+            enum: [auth]
+          token:
+            type: string
+            description: Access token from POST /auth/login or POST /auth/refresh.
+    SendChatMessage:
+      name: message
+      summary: Store a text message through chat-service and fan it out to the other participant.
+      payload:
+        type: object
+        required: [type, chatId, content]
+        properties:
+          type:
+            type: string
+            enum: [message]
+          chatId:
+            type: integer
+          content:
+            type: string
+    GameCreate:
+      name: gameCreate
+      summary: Create a pending room. The authenticated user becomes the first player.
+      payload:
+        type: object
+        required: [type, gameName, secondUserId]
+        properties:
+          type:
+            type: string
+            enum: [gameCreate]
+          gameName:
+            type: string
+            enum: [Checkers, Abalone]
+          secondUserId:
+            type: integer
+    GameAccept:
+      name: gameAccept
+      summary: Accept a pending invitation as the authenticated user.
+      payload:
+        type: object
+        required: [type, roomId]
+        properties:
+          type:
+            type: string
+            enum: [gameAccept]
+          roomId:
+            type: string
+    GameLeave:
+      name: gameLeave
+      summary: Leave a room as the authenticated user.
+      payload:
+        type: object
+        required: [type, roomId]
+        properties:
+          type:
+            type: string
+            enum: [gameLeave]
+          roomId:
+            type: string
+    GameMove:
+      name: gameMove
+      summary: Apply a move in an active room as the authenticated user.
+      payload:
+        type: object
+        required: [type, roomId, move]
+        properties:
+          type:
+            type: string
+            enum: [gameMove]
+          roomId:
+            type: string
+          move:
+            description: Checkers uses from/to squares. Abalone uses marbles, dq and dr.
+    ChatMessage:
+      name: message
+      summary: A chat message for the recipient. Also produced by POST /notify.
+      payload:
+        $ref: "#/components/schemas/ServerFrame"
+    ChatCreated:
+      name: chatCreated
+      summary: A newly created chat for the other participant. Produced by POST /notify.
+      payload:
+        $ref: "#/components/schemas/ServerFrame"
+    GameInvite:
+      name: gameInvite
+      summary: Invitation sent to the second player.
+      payload:
+        $ref: "#/components/schemas/ServerFrame"
+    GameUpdate:
+      name: gameUpdate
+      summary: Current room, sent to both participants after create, accept, or move.
+      payload:
+        $ref: "#/components/schemas/ServerFrame"
+    GameEnded:
+      name: gameEnded
+      summary: The room is gone. `message` is `{ roomId }`.
+      payload:
+        $ref: "#/components/schemas/ServerFrame"
+    GameError:
+      name: gameError
+      summary: The game action failed. `message` is `{ message }`.
+      payload:
+        $ref: "#/components/schemas/ServerFrame"
+  schemas:
+    ServerFrame:
+      type: object
+      required: [type, message]
+      properties:
+        type:
+          type: string
+          enum: [message, chatCreated, gameInvite, gameUpdate, gameEnded, gameError]
+        message:
+          description: Chat message, chat object, game room, `{ roomId }`, or `{ message }`.
