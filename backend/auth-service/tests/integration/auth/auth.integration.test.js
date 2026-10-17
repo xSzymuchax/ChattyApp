@@ -48,7 +48,7 @@ describe("auth integration", () => {
         });
 
         expect(response.status).toBe(400);
-        expect(response.body).toEqual({ code: "WEAK_PASSWORD" });
+        expect(response.body).toEqual({ message: "Bad request." });
         expect(fetch).not.toHaveBeenCalled();
         expect(mockRepository.createCredential).not.toHaveBeenCalled();
     });
@@ -60,7 +60,7 @@ describe("auth integration", () => {
         });
 
         expect(response.status).toBe(400);
-        expect(response.body).toEqual({ code: "PASSWORD_MISMATCH" });
+        expect(response.body).toEqual({ message: "Bad request." });
         expect(fetch).not.toHaveBeenCalled();
     });
 
@@ -70,7 +70,7 @@ describe("auth integration", () => {
         const response = await request(app).post("/register").send(registerBody);
 
         expect(response.status).toBe(409);
-        expect(response.body).toEqual({ code: "ACCOUNT_EXISTS" });
+        expect(response.body).toEqual({ message: "Account exists." });
     });
 
     it("registers a user and stores the hash returned by the service", async () => {
@@ -105,7 +105,7 @@ describe("auth integration", () => {
         const response = await request(app).post("/register").send(registerBody);
 
         expect(response.status).toBe(409);
-        expect(response.body).toEqual({ code: "ACCOUNT_EXISTS" });
+        expect(response.body).toEqual({ message: "Account exists." });
     });
 
     it("logs in through the user service and the credential check", async () => {
@@ -139,7 +139,7 @@ describe("auth integration", () => {
         });
 
         expect(response.status).toBe(401);
-        expect(response.body).toEqual({ code: "INVALID_CREDENTIALS" });
+        expect(response.body).toEqual({ message: "Invalid credentials." });
     });
 
     it("refreshes a verified session token", async () => {

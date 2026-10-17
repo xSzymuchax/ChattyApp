@@ -133,7 +133,7 @@ registry.registerPath({
             content: {
                 "application/json": {
                     schema: AuthErrorResponseDto,
-                    example: { error: "Authorization header missing" },
+                    example: { message: "Invalid or expired token." },
                 },
             },
         },
@@ -169,7 +169,7 @@ registry.registerPath({
             content: {
                 "application/json": {
                     schema: AuthErrorResponseDto,
-                    example: { error: "Authorization header missing" },
+                    example: { message: "Invalid or expired token." },
                 },
             },
         },

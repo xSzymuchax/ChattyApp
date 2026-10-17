@@ -2,7 +2,7 @@ const z = require("../../../config/zod");
 
 const AuthErrorResponseDto =
     z.object({
-        error: z.string().openapi({example: "Authorization header missing"}),
+        message: z.string().openapi({example: "Invalid or expired token."}),
     })
     .openapi("AuthErrorResponse");
 

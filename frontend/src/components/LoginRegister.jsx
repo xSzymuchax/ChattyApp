@@ -80,6 +80,11 @@ function LoginRegister(){
         setRegisterError('');
         setRegisterSuccess('');
 
+        if (registerForm.password !== registerForm.passwordConfirm) {
+            setRegisterError('Passwords do not match.');
+            return;
+        }
+
         try {
             await register(
                 registerForm.username,
@@ -98,20 +103,14 @@ function LoginRegister(){
             setisLoginTabSelected(true);
         } catch (error) {
             const status = error.response?.status;
-            const code = error.response?.data?.code;
 
-            if (status === 409 || code === 'ACCOUNT_EXISTS') {
+            if (status === 409) {
                 setRegisterError('Username or email is already taken.');
                 return;
             }
 
-            if (code === 'WEAK_PASSWORD') {
-                setRegisterError('Password is too weak.');
-                return;
-            }
-
-            if (code === 'PASSWORD_MISMATCH') {
-                setRegisterError('Passwords do not match.');
+            if (status === 400) {
+                setRegisterError('Check the form. Use a strong password and make sure both passwords match.');
                 return;
             }
 

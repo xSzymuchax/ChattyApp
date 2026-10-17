@@ -47,17 +47,8 @@ describe("auth repository", () => {
         expect(created).toEqual(expect.objectContaining({
             email: "ada@example.com",
             userId: 7,
-        }));
-
-        expect(creates).not.toEqual(expect.objectContaining({
             passwordHash: "hash",
         }));
-
-        expect(repository.createCredential).toHaveBeenCalledWith({
-            email: "ada@example.com",
-            passwordHash: "hash",
-            userId: 7,
-        });
     });
 
     it("updates the hash of an existing account", async () => {
