@@ -3,6 +3,11 @@ const { processAvatar } = require("../../util/avatar");
 const { UniqueConstraintError } = require("sequelize");
 const handleAvatarUpload = require("../../middleware/avatarUpload");
 
+const isInvalidUserId = (id) => {
+    const parsed = Number(id);
+    return !Number.isInteger(parsed) || parsed <= 0;
+};
+
 const getUsers = async (req, res) => {
     try{
         const { username } = req.query;
@@ -50,7 +55,7 @@ const getUser = async (req, res) => {
     try {
         const { id } = req.params;
 
-        if (!id || Number.isNaN(id) || id <= 0) 
+        if (isInvalidUserId(id)) 
             return res.status(400).json({message: "Bad request."});
 
         const result = await userService.getUserById(id);
@@ -69,7 +74,7 @@ const getAvatar = async (req, res) => {
     try {
         const { id } = req.params;
 
-        if (!id || Number.isNaN(id) || id <= 0)
+        if (isInvalidUserId(id))
             return res.status(400).json({ message: "Bad request." });
 
         const result = await userService.getUserAvatar(id);
@@ -101,7 +106,7 @@ const updateAvatar = async (req, res) => {
         if (id != userId)
             return res.status(403).json({ message: "Access denied." });
 
-        if (!id || Number.isNaN(id) || id <= 0)
+        if (isInvalidUserId(id))
             return res.status(400).json({ message: "Bad request." });
 
         if (!req.file?.buffer)
@@ -132,7 +137,10 @@ const updateUser = async (req, res) => {
         if (id != userId)
             return res.status(403).json({message: "Access denied."})
 
-        if (!id || Number.isNaN(id) || id <= 0) 
+        if (isInvalidUserId(id))
+            return res.status(400).json({message: "Bad request."});
+
+        if (typeof description !== "string")
             return res.status(400).json({message: "Bad request."});
 
         const result = await userService.updateUser(id, {description});
@@ -159,7 +167,7 @@ const deleteUser = async (req, res) => {
         if (id != userId)
             return res.status(403).json({message: "Access denied."})
 
-        if (!id || Number.isNaN(id) || id <= 0) 
+        if (isInvalidUserId(id)) 
             return res.status(400).json({message: "Bad request."});
 
         const result = await userService.deleteUser(id);

@@ -11,11 +11,18 @@ const serializeUser = (user, hasAvatarOverride) => {
     const json = typeof user.toJSON === "function" ? user.toJSON() : { ...user };
     const raw = hasAvatarOverride ?? json.hasAvatar;
 
-    json.hasAvatar =
-        raw === true || raw === "true" || raw === "t" || raw === 1;
-    delete json.avatar;
+    const updatedAt = json.updatedAt instanceof Date
+        ? json.updatedAt.toISOString()
+        : json.updatedAt;
 
-    return json;
+    return {
+        id: json.id,
+        username: json.username,
+        description: json.description ?? null,
+        email: json.email,
+        hasAvatar: raw === true || raw === "true" || raw === "t" || raw === 1,
+        updatedAt,
+    };
 };
 
 const createUserRepository = (User) => ({
@@ -106,7 +113,7 @@ const createUserRepository = (User) => ({
 
         if (!user) return false;
 
-        return user;
+        return serializeUser(user);
     }
 })
 

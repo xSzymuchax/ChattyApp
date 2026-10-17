@@ -4,6 +4,7 @@ const { UserInfoResponseDto } = require("./dto/user-info.response");
 const { UserListResponseDto } = require("./dto/user-list.response");
 const { ErrorResponseDto } = require("./dto/error.response");
 const { UserDataRequestDto } = require("./dto/user-data.request");
+const { UpdateUserRequestDto } = require("./dto/update-user.request");
 const { UserIdParamsDto } = require("./dto/user-id.params");
 const { UsernameQueryDto } = require("./dto/username.query");
 const { EmailRequestDto } = require("./dto/email.request");
@@ -112,7 +113,7 @@ registry.registerPath({
         body: {
             content: {
                 "application/json": {
-                    schema: UserDataRequestDto,
+                    schema: UpdateUserRequestDto,
                 },
             },
         },
