@@ -1,0 +1,61 @@
+Project chatty {
+  database_type: 'PostgreSQL'
+}
+
+Table Credentials {
+  id integer [pk, increment]
+  userId integer [not null, unique, ref: - Users.id]
+  email varchar(255) [unique]
+  passwordHash varchar(255)
+  createdAt timestamptz
+  updatedAt timestamptz
+}
+
+Table Users {
+  id integer [pk, increment]
+  username varchar(16) [not null, unique]
+  description varchar(255)
+  email varchar(255) [unique]
+  isActive boolean [default: true]
+  avatar bytea
+  createdAt timestamptz
+  updatedAt timestamptz
+}
+
+Table chats {
+  id integer [pk, increment]
+  firstUserId integer [not null, ref: > Users.id]
+  secondUserId integer [not null, ref: > Users.id]
+  createdAt timestamptz
+  updatedAt timestamptz
+
+  indexes {
+    (firstUserId, secondUserId) [unique]
+  }
+}
+
+Table messages {
+  id integer [pk, increment]
+  chatId integer [not null, ref: > chats.id]
+  senderId integer [not null, ref: > Users.id]
+  content text [not null]
+  attachmentName varchar(255)
+  attachmentMime varchar(127)
+  attachmentSize integer
+  attachmentKind varchar(16)
+  createdAt timestamptz
+  updatedAt timestamptz
+}
+
+TableGroup auth_db {
+  Credentials
+}
+
+TableGroup user_db {
+  Users
+}
+
+TableGroup chat_db {
+  chats
+  messages
+}
