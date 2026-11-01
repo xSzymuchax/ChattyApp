@@ -1,0 +1,41 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+concurrency:
+  group: tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            backend/nodejs/auth-service/package-lock.json
+            backend/nodejs/user-service/package-lock.json
+            backend/nodejs/chat-service/package-lock.json
+            backend/nodejs/game-service/package-lock.json
+
+      - name: Install service dependencies
+        run: |
+          npm ci --prefix backend/nodejs/auth-service
+          npm ci --prefix backend/nodejs/user-service
+          npm ci --prefix backend/nodejs/chat-service
+          npm ci --prefix backend/nodejs/game-service
+
+      - name: Run tests
+        run: npm test
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: true

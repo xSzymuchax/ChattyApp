@@ -13,10 +13,13 @@ const playSound = (src) => {
     sound.play().catch(() => {});
 };
 
+const publicFile = (path) =>
+    `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
+
 export const playIncomingMessageSound = () => {
-    playSound("/sounds/messageReceived.mp3");
+    playSound(publicFile("sounds/messageReceived.mp3"));
 };
 
 export const playGameInviteSound = () => {
-    playSound("/sounds/gameInvite.mp3");
+    playSound(publicFile("sounds/gameInvite.mp3"));
 };

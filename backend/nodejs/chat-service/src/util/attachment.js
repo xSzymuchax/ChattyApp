@@ -6,7 +6,7 @@ const IMAGE_QUALITY = 75;
 const IMAGE_TYPES = /\/(jpeg|png|webp|gif|bmp|tiff)$/i;
 
 const safeFileName = (name) => {
-    const base = path.basename(String(name || "file")).replace(/[\r\n]/g, "");
+    const base = path.basename(String(name || "file").replace(/\\/g, "/")).replace(/[\r\n]/g, "");
     return base.slice(0, 255) || "file";
 };
 

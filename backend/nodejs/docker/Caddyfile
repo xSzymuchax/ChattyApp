@@ -1,0 +1,21 @@
+{
+	auto_https off
+	admin off
+}
+
+:{$PORT:3000} {
+	handle /health {
+		reverse_proxy 127.0.0.1:3001
+	}
+
+	handle /ws* {
+		reverse_proxy 127.0.0.1:3300
+	}
+
+	handle {
+		request_body {
+			max_size 52MB
+		}
+		reverse_proxy 127.0.0.1:3000
+	}
+}
