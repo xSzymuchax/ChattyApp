@@ -2,4 +2,8 @@ node_modules
 .env
 temp
 postgres-config.sql
-backend/chat-service/uploads
+backend/nodejs/chat-service/uploads
+.neon
+.agents/
+skills-lock.json
+.cursor/mcp.json

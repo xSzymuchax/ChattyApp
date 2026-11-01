@@ -33,7 +33,17 @@ Konta, profile i czat zapisuje PostgreSQL przez Sequelize. Zdjęcia i pliki przy
 
 Schemat pochodzi z [dbdiagram.io](https://dbdiagram.io/d).
 
-Całość składa Docker Compose. Caddy serwuje zbudowany interfejs i kieruje `/api` oraz `/ws` do bramek. Testy usług używają Jest i Supertest. Testy bazy podnoszą PostgreSQL w Testcontainers. 
+Całość składa Docker Compose. Caddy serwuje zbudowany interfejs i kieruje `/api` oraz `/ws` do bramek. Testy usług używają Jest i Supertest. Testy bazy podnoszą PostgreSQL w Testcontainers.
+
+## Narzędzia
+
+Baza produkcyjna stoi na [Neon](https://neon.com/). To PostgreSQL. Trzy bazy, `auth_db`, `user_db` i `chat_db`, należą do trzech usług. Połączenie z Neonem idzie po SSL.
+
+Backend jest na [Render](https://render.com/) jako jedna usługa Docker. Obraz buduje `backend/nodejs/Dockerfile`. Po starcie `docker/entrypoint.sh` uruchamia sześć procesów, a Caddy przyjmuje ruch na porcie podanym przez Render. Usługa przebudowuje się po wejściu zmian na `master`, gdy zmieniony jest katalog `backend/nodejs` i gdy przejdą testy.
+
+Interfejs jest na [GitHub Pages](https://pages.github.com/), pod adresem [https://xszymuchax.github.io/ChattyApp/](https://xszymuchax.github.io/ChattyApp/). Workflow `.github/workflows/pages.yml` buduje front Vite i publikuje katalog `dist` po pushu do `master`, gdy zmieni się `frontend/`.
+
+Testy uruchamia [GitHub Actions](https://docs.github.com/en/actions). Plik `.github/workflows/tests.yml` odpala `npm test` przy pull requeście do `master` i ponownie po wejściu zmian na ten branch. Render czeka na zielony wynik, zanim wgra nowy backend.
 
 ## Uruchomienie w Dockerze
 
@@ -57,7 +67,7 @@ Dane Postgresa i wysłane pliki zostają w wolumenach Dockera. `docker compose d
 
 Praca nad kodem wymaga Node.js, npm i Dockera. Docker uruchamia tylko bazę. Reszta działa na hoście.
 
-Polecenie `npm run install-all` instaluje zależności w katalogu głównym, w `backend`, w `frontend` i w każdej usłudze, która ma własny `package.json`.
+Polecenie `npm run install-all` instaluje zależności w katalogu głównym, w `backend/nodejs`, w `frontend` i w każdej usłudze, która ma własny `package.json`.
 
 Polecenie `npm run example-env` kopiuje przykłady do plików `.env`. Przykłady mają już wspólny `JWT_SECRET`, porty i konta lokalnej bazy:
 

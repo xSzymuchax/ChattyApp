@@ -18,7 +18,7 @@ services:
       retries: 10
 
   auth-service:
-    build: ./backend/auth-service
+    build: ./backend/nodejs/auth-service
     restart: unless-stopped
     environment:
       PORT: 3001
@@ -37,7 +37,7 @@ services:
         condition: service_started
 
   user-service:
-    build: ./backend/user-service
+    build: ./backend/nodejs/user-service
     restart: unless-stopped
     environment:
       PORT: 3002
@@ -52,7 +52,7 @@ services:
         condition: service_healthy
 
   chat-service:
-    build: ./backend/chat-service
+    build: ./backend/nodejs/chat-service
     restart: unless-stopped
     environment:
       PORT: 3003
@@ -71,13 +71,13 @@ services:
         condition: service_healthy
 
   game-service:
-    build: ./backend/game-service
+    build: ./backend/nodejs/game-service
     restart: unless-stopped
     environment:
       PORT: 3004
 
   api-gateway:
-    build: ./backend/api-gateway
+    build: ./backend/nodejs/api-gateway
     restart: unless-stopped
     environment:
       PORT: 3000
@@ -93,7 +93,7 @@ services:
       - game-service
 
   realtime-gateway:
-    build: ./backend/realtime-gateway
+    build: ./backend/nodejs/realtime-gateway
     restart: unless-stopped
     environment:
       PORT: 3300
