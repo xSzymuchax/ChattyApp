@@ -1,13 +1,83 @@
-.chat-message {
+.chat-message-group {
+    --chat-message-pad-block: 10px;
+    --chat-message-border: 2px;
+    --chat-message-line: 1.25;
+    display: flex;
     margin: 10px;
-    padding: 10px 12px;
-    max-width: 75%;
-    width: fit-content;
-    margin-left: var(--margin-left-value);
-    margin-right: var(--margin-right-value);
-    overflow-wrap: anywhere;
+}
 
-    border: 2px solid var(--accent-dark);
+.chat-message-group.own {
+    justify-content: flex-end;
+}
+
+.chat-message-group-body {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    max-width: 75%;
+    min-width: 0;
+}
+
+.chat-message-column {
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.chat-message-group.own .chat-message-column,
+.chat-message-group.own .chat-message-stack {
+    align-items: flex-end;
+}
+
+.chat-message-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.chat-message-author {
+    margin: 0 12px 2px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--text);
+    opacity: 0.75;
+}
+
+.chat-message-avatar {
+    width: calc(
+        var(--chat-message-line) * 1em
+        + var(--chat-message-pad-block) * 2
+        + var(--chat-message-border) * 2
+    );
+    height: calc(
+        var(--chat-message-line) * 1em
+        + var(--chat-message-pad-block) * 2
+        + var(--chat-message-border) * 2
+    );
+    flex: 0 0 auto;
+    overflow: hidden;
+    border: var(--chat-message-border) solid var(--accent-dark);
+    border-radius: 12px;
+}
+
+.chat-message-avatar .user-avatar span {
+    font-size: 0.85em;
+}
+
+.chat-message {
+    margin: 0;
+    padding: var(--chat-message-pad-block) 12px;
+    max-width: 100%;
+    width: fit-content;
+    overflow-wrap: anywhere;
+    line-height: var(--chat-message-line);
+
+    border: var(--chat-message-border) solid var(--accent-dark);
     border-radius: 12px;
 
     color: var(--text);
@@ -15,14 +85,10 @@
 }
 
 .chat-message.other {
-    margin-left: 10px;
-    margin-right: auto;
     background-color: var(--accent-dark);
 }
 
 .chat-message.own {
-    margin-left: auto;
-    margin-right: 10px;
     background-color: var(--accent);
     color: var(--accent-contrast);
     border-color: var(--accent-hover);

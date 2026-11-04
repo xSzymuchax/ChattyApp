@@ -23,6 +23,7 @@ services:
     environment:
       PORT: 3001
       JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-}
       DATABASE_NAME: auth_db
       DATABASE_USER: auth_service
@@ -42,6 +43,7 @@ services:
     environment:
       PORT: 3002
       JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
       DATABASE_NAME: user_db
       DATABASE_USER: user_service
       DATABASE_PASSWORD: ${USER_DB_PASSWORD}
@@ -57,6 +59,7 @@ services:
     environment:
       PORT: 3003
       JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
       DATABASE_NAME: chat_db
       DATABASE_USER: chat_service
       DATABASE_PASSWORD: ${CHAT_DB_PASSWORD}
@@ -75,6 +78,7 @@ services:
     restart: unless-stopped
     environment:
       PORT: 3004
+      JWT_SECRET: ${JWT_SECRET}
 
   api-gateway:
     build: ./backend/nodejs/api-gateway
@@ -98,6 +102,7 @@ services:
     environment:
       PORT: 3300
       JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
       CHAT_SERVICE_URL: http://chat-service:3003
       GAME_SERVICE_URL: http://game-service:3004
     depends_on:

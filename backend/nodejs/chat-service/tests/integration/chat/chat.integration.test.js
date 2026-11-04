@@ -27,9 +27,10 @@ jest.mock("../../../src/modules/chat/chat.repository", () => {
             const row = chats.find((chat) => chat.id === Number(id));
             return row ? asModel(row) : null;
         },
-        async getChatByUserIds(firstUserId, secondUserId) {
+        async getDirectChatByMemberIds(memberIds) {
             const row = chats.find((chat) =>
-                chat.firstUserId === firstUserId && chat.secondUserId === secondUserId
+                chat.name == null &&
+                JSON.stringify(chat.memberIds) === JSON.stringify(memberIds)
             );
             return row ? asModel(row) : null;
         },
@@ -58,7 +59,7 @@ jest.mock("../../../src/modules/chat/chat.repository", () => {
         },
         async getUserChats(userId) {
             return chats
-                .filter((chat) => chat.firstUserId === Number(userId) || chat.secondUserId === Number(userId))
+                .filter((chat) => (chat.memberIds ?? []).includes(Number(userId)))
                 .map(asModel);
         },
         reset() {
@@ -95,25 +96,27 @@ describe("chat integration", () => {
         const created = await request(app)
             .post("/")
             .set(auth(5))
-            .send({ firstUserId: 5, secondUserId: 2 });
+            .send({ memberIds: [5, 2] });
 
         expect(created.status).toBe(200);
         expect(created.body).toEqual(expect.objectContaining({
             id: 1,
-            firstUserId: 2,
-            secondUserId: 5,
+            name: null,
+            createdBy: 5,
+            memberIds: [2, 5],
+            adminIds: [5],
         }));
 
         const duplicate = await request(app)
             .post("/")
             .set(auth(2))
-            .send({ firstUserId: 2, secondUserId: 5 });
+            .send({ memberIds: [2, 5] });
         expect(duplicate.status).toBe(409);
 
         const outsider = await request(app)
             .post("/")
             .set(auth(9))
-            .send({ firstUserId: 2, secondUserId: 5 });
+            .send({ memberIds: [2, 5] });
         expect(outsider.status).toBe(403);
 
         const sent = await request(app)
@@ -122,7 +125,7 @@ describe("chat integration", () => {
             .send({ content: "hello" });
 
         expect(sent.status).toBe(200);
-        expect(sent.body.recipientId).toBe(5);
+        expect(sent.body.recipientIds).toEqual([5]);
         expect(sent.body.message.content).toBe("hello");
 
         const denied = await request(app)

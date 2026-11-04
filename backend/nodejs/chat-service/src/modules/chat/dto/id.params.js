@@ -6,6 +6,13 @@ const IdParamsDto =
     })
     .openapi("IdParams");
 
+const MemberParamsDto =
+    z.object({
+        id: z.string().openapi({example: "1"}),
+        userId: z.string().openapi({example: "3"}),
+    })
+    .openapi("MemberParams");
+
 const AttachmentParamsDto =
     z.object({
         id: z.string().openapi({example: "1"}),
@@ -13,4 +20,4 @@ const AttachmentParamsDto =
     })
     .openapi("AttachmentParams");
 
-module.exports = { IdParamsDto, AttachmentParamsDto };
+module.exports = { IdParamsDto, MemberParamsDto, AttachmentParamsDto };

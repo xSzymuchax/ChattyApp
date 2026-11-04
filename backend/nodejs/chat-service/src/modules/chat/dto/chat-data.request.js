@@ -2,8 +2,8 @@ const z = require("../../../config/zod");
 
 const ChatDataRequestDto =
     z.object({
-        firstUserId: z.int().openapi({example: 1}),
-        secondUserId: z.int().openapi({example: 2}),
+        memberIds: z.array(z.int()).openapi({example: [1, 2]}),
+        name: z.string().optional().openapi({example: "Team"}),
     })
     .openapi("ChatDataRequestDto");
 

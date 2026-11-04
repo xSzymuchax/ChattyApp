@@ -3,6 +3,10 @@ const { sendToUser, sendOn, notifyRoomPlayers } = require('../websocket/connecti
 
 const gameServiceUrl = () => process.env.GAME_SERVICE_URL;
 
+const authHeaders = (ws) => (
+    ws.token ? { Authorization: `Bearer ${ws.token}` } : {}
+);
+
 const sendGameError = (userId, message) => {
     sendToUser(userId, { message }, 'gameError');
 };
@@ -18,7 +22,7 @@ async function handleGameCreate(ws, data) {
             gameName: data.gameName,
             firstUserId: ws.userId,
             secondUserId: data.secondUserId,
-        });
+        }, { headers: authHeaders(ws) });
 
         const room = response.data;
         sendOn(ws, 'gameUpdate', room);
@@ -41,7 +45,8 @@ async function handleGameAccept(ws, data) {
 
         const response = await axios.post(
             `${gameServiceUrl()}/${data.roomId}/accept`,
-            { userId: ws.userId }
+            { userId: ws.userId },
+            { headers: authHeaders(ws) }
         );
 
         notifyRoomPlayers(ws, response.data, 'gameUpdate', response.data);
@@ -68,7 +73,8 @@ async function handleGameLeave(ws, data) {
 
         const response = await axios.post(
             `${gameServiceUrl()}/${data.roomId}/leave`,
-            { userId: ws.userId }
+            { userId: ws.userId },
+            { headers: authHeaders(ws) }
         );
 
         notifyRoomPlayers(ws, response.data, 'gameEnded', { roomId: response.data.id });
@@ -99,7 +105,8 @@ async function handleGameMove(ws, data) {
             {
                 userId: ws.userId,
                 move: data.move,
-            }
+            },
+            { headers: authHeaders(ws) }
         );
 
         notifyRoomPlayers(ws, response.data, 'gameUpdate', response.data);

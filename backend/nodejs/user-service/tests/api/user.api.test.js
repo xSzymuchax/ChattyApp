@@ -1,4 +1,5 @@
 process.env.JWT_SECRET = "api-test-secret";
+process.env.INTERNAL_SERVICE_TOKEN = "internal-test-token";
 
 jest.mock("../../src/modules/user/user.service", () => ({
     createUser: jest.fn(),
@@ -31,6 +32,9 @@ const sign = (payload = { userId: 7, username: "ada" }) =>
 const authed = (req, payload) =>
     req.set("Authorization", `Bearer ${sign(payload)}`);
 
+const internal = (req) =>
+    req.set("X-Internal-Token", process.env.INTERNAL_SERVICE_TOKEN);
+
 const asBuffer = (req) => req.buffer(true).parse((res, callback) => {
     const chunks = [];
     res.on("data", (chunk) => chunks.push(chunk));
@@ -60,7 +64,7 @@ describe("User API", () => {
             const users = [{ id: 7, username: "ada" }];
             userService.getUsers.mockResolvedValue(users);
 
-            const response = await request(app).get("/").query({ username: " ada " });
+            const response = await authed(request(app).get("/")).query({ username: " ada " });
 
             expect(response.status).toBe(200);
             expect(response.body).toEqual(users);
@@ -70,7 +74,7 @@ describe("User API", () => {
         it("calls the service with undefined when the query is missing", async () => {
             userService.getUsers.mockResolvedValue([]);
 
-            const response = await request(app).get("/");
+            const response = await authed(request(app).get("/"));
 
             expect(response.status).toBe(200);
             expect(response.body).toEqual([]);
@@ -80,7 +84,7 @@ describe("User API", () => {
         it("forwards an empty username filter", async () => {
             userService.getUsers.mockResolvedValue([]);
 
-            const response = await request(app).get("/").query({ username: "" });
+            const response = await authed(request(app).get("/")).query({ username: "" });
 
             expect(response.status).toBe(200);
             expect(userService.getUsers).toHaveBeenCalledWith("");
@@ -89,7 +93,7 @@ describe("User API", () => {
         it("returns 500 without leaking the internal error", async () => {
             userService.getUsers.mockRejectedValue(new Error("query leaked"));
 
-            const response = await request(app).get("/");
+            const response = await authed(request(app).get("/"));
 
             expect(response.status).toBe(500);
             expect(response.body).toEqual({ message: "Internal server error." });
@@ -102,7 +106,7 @@ describe("User API", () => {
             const user = { id: 7, username: "ada" };
             userService.getUserById.mockResolvedValue(user);
 
-            const response = await request(app).get("/7");
+            const response = await authed(request(app).get("/7"));
 
             expect(response.status).toBe(200);
             expect(response.body).toEqual(user);
@@ -112,14 +116,14 @@ describe("User API", () => {
         it("returns 404 when the user does not exist", async () => {
             userService.getUserById.mockResolvedValue(null);
 
-            const response = await request(app).get("/7");
+            const response = await authed(request(app).get("/7"));
 
             expect(response.status).toBe(404);
             expect(response.body).toEqual({ message: "User not found." });
         });
 
         it.each(["0", "-1", "-4", "abc"])("returns 400 for id %s", async (id) => {
-            const response = await request(app).get(`/${id}`);
+            const response = await authed(request(app).get(`/${id}`));
 
             expect(response.status).toBe(400);
             expect(response.body).toEqual({ message: "Bad request." });
@@ -129,7 +133,7 @@ describe("User API", () => {
         it("returns 500 without leaking the internal error", async () => {
             userService.getUserById.mockRejectedValue(new Error("row leaked"));
 
-            const response = await request(app).get("/7");
+            const response = await authed(request(app).get("/7"));
 
             expect(response.status).toBe(500);
             expect(response.body).toEqual({ message: "Internal server error." });
@@ -155,10 +159,15 @@ describe("User API", () => {
             };
             userService.createUser.mockResolvedValue(created);
 
-            const response = await request(app).post("/").send(payload);
+            const response = await internal(request(app).post("/")).send(payload);
 
             expect(response.status).toBe(200);
-            expect(response.body).toEqual(created);
+            expect(response.body).toEqual({
+                id: 7,
+                username: "ada",
+                description: "hello",
+            });
+            expect(response.body.email).toBeUndefined();
             expect(userService.createUser).toHaveBeenCalledWith({
                 username: "ada",
                 email: "ada@example.com",
@@ -175,13 +184,18 @@ describe("User API", () => {
             };
             userService.createUser.mockResolvedValue(created);
 
-            const response = await request(app).post("/").send({
+            const response = await internal(request(app).post("/")).send({
                 username: "ada",
                 email: "ada@example.com",
             });
 
             expect(response.status).toBe(200);
-            expect(response.body).toEqual(created);
+            expect(response.body).toEqual({
+                id: 1,
+                username: "ada",
+                description: null,
+            });
+            expect(response.body.email).toBeUndefined();
             expect(userService.createUser).toHaveBeenCalledWith({
                 username: "ada",
                 email: "ada@example.com",
@@ -196,7 +210,7 @@ describe("User API", () => {
             [{ username: "ada", email: "" }, "an empty email"],
             [{}, "an empty body"],
         ])("returns 400 when %s is missing (%s)", async (body) => {
-            const response = await request(app).post("/").send(body);
+            const response = await internal(request(app).post("/")).send(body);
 
             expect(response.status).toBe(400);
             expect(response.body).toEqual({ message: "Bad request." });
@@ -206,7 +220,7 @@ describe("User API", () => {
         it("returns 409 when the service reports a conflict", async () => {
             userService.createUser.mockResolvedValue(null);
 
-            const response = await request(app).post("/").send(payload);
+            const response = await internal(request(app).post("/")).send(payload);
 
             expect(response.status).toBe(409);
             expect(response.body).toEqual({
@@ -219,7 +233,7 @@ describe("User API", () => {
                 new UniqueConstraintError({ message: "duplicate" })
             );
 
-            const response = await request(app).post("/").send(payload);
+            const response = await internal(request(app).post("/")).send(payload);
 
             expect(response.status).toBe(409);
             expect(response.body).toEqual({
@@ -240,7 +254,7 @@ describe("User API", () => {
         it("returns 500 without leaking the internal error", async () => {
             userService.createUser.mockRejectedValue(new Error("insert leaked"));
 
-            const response = await request(app).post("/").send(payload);
+            const response = await internal(request(app).post("/")).send(payload);
 
             expect(response.status).toBe(500);
             expect(response.body).toEqual({ message: "Internal server error." });
@@ -255,10 +269,12 @@ describe("User API", () => {
 
             const response = await request(app)
                 .post("/userOfEmailActive")
+                .set("X-Internal-Token", process.env.INTERNAL_SERVICE_TOKEN)
                 .send({ email: "ada@example.com" });
 
             expect(response.status).toBe(200);
-            expect(response.body).toEqual(user);
+            expect(response.body).toEqual({ id: 7, username: "ada" });
+            expect(response.body.email).toBeUndefined();
             expect(userService.checkUserExist).toHaveBeenCalledWith("ada@example.com");
         });
 
@@ -267,6 +283,7 @@ describe("User API", () => {
 
             const response = await request(app)
                 .post("/userOfEmailActive")
+                .set("X-Internal-Token", process.env.INTERNAL_SERVICE_TOKEN)
                 .send({ email: "missing@example.com" });
 
             expect(response.status).toBe(404);
@@ -276,7 +293,8 @@ describe("User API", () => {
         it("forwards a missing email to the service", async () => {
             userService.checkUserExist.mockResolvedValue(null);
 
-            const response = await request(app).post("/userOfEmailActive").send({});
+            const response = await request(app).post("/userOfEmailActive")
+                .set("X-Internal-Token", process.env.INTERNAL_SERVICE_TOKEN).send({});
 
             expect(response.status).toBe(404);
             expect(userService.checkUserExist).toHaveBeenCalledWith(undefined);
@@ -287,6 +305,7 @@ describe("User API", () => {
 
             const response = await request(app)
                 .post("/userOfEmailActive")
+                .set("X-Internal-Token", process.env.INTERNAL_SERVICE_TOKEN)
                 .send({ email: "ada@example.com" });
 
             expect(response.status).toBe(500);
@@ -348,7 +367,12 @@ describe("User API", () => {
             });
 
             expect(response.status).toBe(200);
-            expect(response.body).toEqual(updated);
+            expect(response.body).toEqual({
+                id: 7,
+                username: "ada",
+                description: "new",
+            });
+            expect(response.body.email).toBeUndefined();
             expect(userService.updateUser).toHaveBeenCalledWith("7", {
                 description: "new",
             });

@@ -12,10 +12,16 @@ import { useAuth } from '../../auth/AuthContext';
 import { useSocket } from '../../websocket/WebSocketContext';
 
 const PAGE_SIZE = 20;
+const EMPTY_USER = {};
 
 function ChatPanel({chatId, onOpenGames, onOpenInvitations, onOpponentChange, onChatActivity, sentChatMessage}) {
     const { userId } = useAuth();
     const [otherUser, setOtherUser] = useState({});
+    const [otherUserChatId, setOtherUserChatId] = useState(null);
+    const [chatMeta, setChatMeta] = useState(null);
+    const [chatMetaId, setChatMetaId] = useState(null);
+    const [senderProfiles, setSenderProfiles] = useState({});
+    const [profilesChatId, setProfilesChatId] = useState(null);
     const [chatMessages, setChatMessages] = useState([]);
     const [hasMore, setHasMore] = useState(false);
     const [isLoadingOlder, setIsLoadingOlder] = useState(false);
@@ -27,40 +33,130 @@ function ChatPanel({chatId, onOpenGames, onOpenInvitations, onOpponentChange, on
     const loadingOlderRef = useRef(false);
     const lastSentChatMessageRef = useRef(null);
     const messageSenderRef = useRef(null);
+    const profilesRef = useRef({ chatId: null, byId: {} });
     const {subscribeToMessages} = useSocket();
+    const visibleChat = chatMetaId === chatId ? chatMeta : null;
+    const visibleOther = otherUserChatId === chatId ? otherUser : EMPTY_USER;
+    const visibleProfiles = profilesChatId === chatId ? senderProfiles : {};
+    const isGroup = Boolean(visibleChat?.name);
 
     useEffect(() => {
-        const loadOtherUser = async () => {
+        let cancelled = false;
+
+        const loadChat = async () => {
             if (!chatId || !userId) {
-                setOtherUser({});
                 return;
             }
 
             try {
                 const chatResponse = await getChat(chatId);
+
+                if (cancelled) {
+                    return;
+                }
+
                 const chat = chatResponse.data;
-                const otherUserId =
-                    Number(chat.firstUserId) === Number(userId)
-                        ? chat.secondUserId
-                        : chat.firstUserId;
+                setChatMeta(chat);
+                setChatMetaId(chatId);
+
+                if (chat?.name) {
+                    setOtherUser({});
+                    setOtherUserChatId(chatId);
+                    return;
+                }
+
+                const otherUserId = (chat?.memberIds ?? [])
+                    .map(Number)
+                    .find((id) => id !== Number(userId));
+
+                if (!otherUserId) {
+                    setOtherUser({});
+                    setOtherUserChatId(chatId);
+                    return;
+                }
 
                 const userResponse = await getUserById(otherUserId);
+
+                if (cancelled) {
+                    return;
+                }
+
                 setOtherUser(userResponse.data);
+                setOtherUserChatId(chatId);
             } catch (error) {
                 console.log(error);
-                setOtherUser({});
             }
         };
 
-        loadOtherUser();
+        loadChat();
+
+        return () => {
+            cancelled = true;
+        };
     }, [chatId, userId]);
+
+    useEffect(() => {
+        if (profilesRef.current.chatId !== chatId) {
+            profilesRef.current = { chatId, byId: {} };
+        }
+
+        const ids = new Set();
+
+        if (chatMetaId === chatId) {
+            (chatMeta?.memberIds ?? []).forEach((id) => ids.add(Number(id)));
+        }
+
+        chatMessages.forEach((message) => {
+            const senderId = Number(message?.senderId);
+
+            if (senderId) {
+                ids.add(senderId);
+            }
+        });
+
+        const missing = [...ids].filter((id) => id && !profilesRef.current.byId[id]);
+
+        if (missing.length === 0) {
+            return;
+        }
+
+        let cancelled = false;
+
+        const loadProfiles = async () => {
+            const loaded = {};
+
+            await Promise.all(missing.map(async (id) => {
+                try {
+                    const response = await getUserById(id);
+                    loaded[id] = response.data;
+                } catch (error) {
+                    console.log(error);
+                    loaded[id] = { id, username: "" };
+                }
+            }));
+
+            if (cancelled || profilesRef.current.chatId !== chatId) {
+                return;
+            }
+
+            profilesRef.current.byId = { ...profilesRef.current.byId, ...loaded };
+            setSenderProfiles({ ...profilesRef.current.byId });
+            setProfilesChatId(chatId);
+        };
+
+        loadProfiles();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [chatId, chatMeta, chatMetaId, chatMessages]);
 
     useEffect(() => {
         if (!onOpponentChange)
             return;
 
-        onOpponentChange(otherUser.id ? otherUser : null);
-    }, [otherUser, onOpponentChange]);
+        onOpponentChange(isGroup || !visibleOther.id ? null : visibleOther);
+    }, [visibleOther, isGroup, onOpponentChange]);
 
     useEffect(() => {
         let cancelled = false;
@@ -204,15 +300,16 @@ function ChatPanel({chatId, onOpenGames, onOpenInvitations, onOpponentChange, on
     return(
         <div className="chat-panel">
             <CurrentChatHeader
-                chatName={otherUser.username}
-                userId={otherUser.id}
-                hasAvatar={otherUser.hasAvatar}
-                version={otherUser.updatedAt}
+                chatName={isGroup ? visibleChat.name : visibleOther.username}
+                userId={isGroup ? undefined : visibleOther.id}
+                hasAvatar={isGroup ? false : visibleOther.hasAvatar}
+                version={isGroup ? undefined : visibleOther.updatedAt}
             />
             <ChatContent
                 key={chatId}
                 chatId={chatId}
                 chatMessages={Number(loadedChatId) === Number(chatId) ? chatMessages : []}
+                senderProfiles={visibleProfiles}
                 hasMore={hasMore}
                 isLoadingOlder={isLoadingOlder}
                 scrollToBottomToken={scrollToBottomToken}
@@ -220,14 +317,16 @@ function ChatPanel({chatId, onOpenGames, onOpenInvitations, onOpponentChange, on
                 onOpenInvitations={onOpenInvitations}
             />
             <div className="chat-composer">
-                <button
-                    type="button"
-                    className="open-games-button"
-                    aria-label="Open games"
-                    onClick={onOpenGames}
-                >
-                    <i className="icon-gamepad"></i>
-                </button>
+                {!isGroup && (
+                    <button
+                        type="button"
+                        className="open-games-button"
+                        aria-label="Open games"
+                        onClick={onOpenGames}
+                    >
+                        <i className="icon-gamepad"></i>
+                    </button>
+                )}
                 <EmojiPicker
                     onSelect={(emoji) => messageSenderRef.current?.insertText(emoji)}
                 />

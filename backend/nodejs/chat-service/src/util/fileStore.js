@@ -24,7 +24,18 @@ const readAttachment = async (messageId) => {
     }
 };
 
+const deleteAttachment = async (messageId) => {
+    try {
+        await fs.unlink(filePathFor(messageId));
+    } catch (error) {
+        if (error.code !== "ENOENT") {
+            throw error;
+        }
+    }
+};
+
 module.exports = {
     saveAttachment,
     readAttachment,
+    deleteAttachment,
 };

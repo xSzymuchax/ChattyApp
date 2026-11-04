@@ -5,6 +5,7 @@ import SearchBar from '../SearchBar'
 import ProfileDisplay from './ProfileDisplay'
 import OpenChatCard from '../ChatPanel/OpenChatCard';
 import GearButton from './GearButton';
+import CreateGroupChat from './CreateGroupChat';
 
 import { useEffect, useState } from 'react';
 import { getUserWithMatchingUsername } from '../../api/user';
@@ -21,6 +22,7 @@ function UsersPanel({selectedChatId, onChatSelected, lastMessageEvent}) {
     const [foundUsers, setFoundUsers] = useState([]);
     const [foundChats, setFoundChats] = useState([]);
     const [unreadChatIds, setUnreadChatIds] = useState(() => new Set());
+    const [createGroupOpen, setCreateGroupOpen] = useState(false);
 
     const getMatchingUsers = async (username) => {
         const query = username?.trim();
@@ -49,8 +51,18 @@ function UsersPanel({selectedChatId, onChatSelected, lastMessageEvent}) {
         }
 
         setFoundChats((prev) => {
-            if (findChatBetweenUsers(prev, chat.firstUserId, chat.secondUserId)) {
+            if (prev.some((item) => Number(item.id) === Number(chat.id))) {
                 return prev;
+            }
+
+            const memberIds = chat.memberIds ?? [];
+
+            if (!chat.name && memberIds.length === 2) {
+                const [firstId, secondId] = memberIds;
+
+                if (findChatBetweenUsers(prev, firstId, secondId)) {
+                    return prev;
+                }
             }
 
             return [...prev, chat];
@@ -111,6 +123,30 @@ function UsersPanel({selectedChatId, onChatSelected, lastMessageEvent}) {
                 return;
             }
 
+            if (payload.type === "chatUpdated" && payload.message?.id) {
+                setFoundChats((prev) => prev.map((chat) => (
+                    Number(chat.id) === Number(payload.message.id)
+                        ? { ...chat, ...payload.message }
+                        : chat
+                )));
+                return;
+            }
+
+            if (
+                (payload.type === "chatRemoved" || payload.type === "chatDeleted")
+                && payload.message?.id
+            ) {
+                const removedId = Number(payload.message.id);
+
+                setFoundChats((prev) => prev.filter((chat) => Number(chat.id) !== removedId));
+
+                if (Number(selectedChatId) === removedId) {
+                    onChatSelected?.(null);
+                }
+
+                return;
+            }
+
             if (payload.type === "message") {
                 const message = payload.message;
                 setFoundChats((prev) => applyMessageToChatList(prev, message));
@@ -142,7 +178,7 @@ function UsersPanel({selectedChatId, onChatSelected, lastMessageEvent}) {
         });
 
         return unsubscribe;
-    }, [subscribeToMessages, userId, selectedChatId]);
+    }, [subscribeToMessages, userId, selectedChatId, onChatSelected]);
 
     const showUsers = () => {
         setActiveView('usersList');
@@ -185,6 +221,14 @@ function UsersPanel({selectedChatId, onChatSelected, lastMessageEvent}) {
                 
                 {activeView === 'usersList' && (
                     <div className='view-container'>
+                        <button
+                            type="button"
+                            className="create-group-button"
+                            onClick={() => setCreateGroupOpen(true)}
+                        >
+                            <i className="icon-group"></i>
+                            New group
+                        </button>
                         <SearchBar onSearch={getMatchingUsers}/>
 
                         <div className='users-list-display'>
@@ -233,6 +277,17 @@ function UsersPanel({selectedChatId, onChatSelected, lastMessageEvent}) {
                 )}
 
             </div>
+
+            {createGroupOpen && (
+                <CreateGroupChat
+                    onClose={() => setCreateGroupOpen(false)}
+                    onCreated={(chat) => {
+                        handleChatReady(chat);
+                        onChatSelected?.(chat.id);
+                        setCreateGroupOpen(false);
+                    }}
+                />
+            )}
         </div>
     );
 }

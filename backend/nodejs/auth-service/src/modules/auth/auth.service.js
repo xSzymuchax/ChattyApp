@@ -10,6 +10,11 @@ const { isPasswordStrong } = require("./password");
 const SALT_ROUNDS = 10;
 const TOKEN_EXPIRES_IN = "1h";
 
+const internalHeaders = () => ({
+    "Content-Type": "application/json",
+    "X-Internal-Token": process.env.INTERNAL_SERVICE_TOKEN || "",
+});
+
 const signAccessToken = (userId, username) => {
     if (!userId) {
         return null;
@@ -39,9 +44,7 @@ const authService = {
 
         const userResponse = await fetch(`${process.env.USER_SERVICE_URL}/`, {
             method: "post",
-              headers: {
-                'Content-Type': 'application/json',
-            },
+              headers: internalHeaders(),
             body: JSON.stringify({
                 email: email,
                 username: username,
@@ -80,9 +83,7 @@ const authService = {
     async generateToken(email, password){
         const userResponse = await fetch(`${process.env.USER_SERVICE_URL}/userOfEmailActive`, {
             method: "post",
-              headers: {
-                'Content-Type': 'application/json',
-            },
+              headers: internalHeaders(),
             body: JSON.stringify({
                 email: email,
             }),

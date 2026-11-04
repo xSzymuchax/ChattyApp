@@ -35,8 +35,8 @@ describe("chat repository", () => {
 
     it("attaches the last message preview and sorts newer chats first", async () => {
         const chats = [
-            model({ id: 1, firstUserId: 7, secondUserId: 8 }),
-            model({ id: 2, firstUserId: 7, secondUserId: 9 }),
+            model({ id: 1, name: null, createdBy: 7, memberIds: [7, 8], adminIds: [7] }),
+            model({ id: 2, name: null, createdBy: 7, memberIds: [7, 9], adminIds: [7] }),
         ];
         const Chat = {
             sequelize: { literal: (sql) => sql },

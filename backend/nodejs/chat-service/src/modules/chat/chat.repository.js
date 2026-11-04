@@ -1,5 +1,12 @@
-const {Op} = require('sequelize');
+const { Op } = require("sequelize");
 const { lastMessagePreview } = require("../../util/messageView");
+
+const asIdList = (value) =>
+    (Array.isArray(value) ? value : [])
+        .map(Number)
+        .filter((id) => Number.isInteger(id) && id > 0);
+
+const uniqueSorted = (ids) => [...new Set(asIdList(ids))].sort((left, right) => left - right);
 
 const toPublicChat = (chat) => {
     if (!chat) return null;
@@ -8,8 +15,10 @@ const toPublicChat = (chat) => {
 
     return {
         id: json.id,
-        firstUserId: json.firstUserId,
-        secondUserId: json.secondUserId,
+        name: json.name ?? null,
+        createdBy: Number(json.createdBy),
+        memberIds: uniqueSorted(json.memberIds),
+        adminIds: uniqueSorted(json.adminIds),
     };
 };
 
@@ -22,13 +31,39 @@ const createChatRepository = (Chat, Message) => ({
         return toPublicChat(await Chat.findByPk(id));
     },
 
-    async getChatByUserIds(firstUserId, secondUserId) {
+    async getDirectChatByMemberIds(memberIds) {
         return Chat.findOne({
             where: {
-                firstUserId,
-                secondUserId,
+                name: { [Op.is]: null },
+                memberIds,
             },
         });
+    },
+
+    async updateChat(id, data) {
+        const chat = await Chat.findByPk(id);
+
+        if (!chat) return null;
+
+        await chat.update(data);
+        return toPublicChat(chat);
+    },
+
+    async getAttachmentMessageIds(chatId) {
+        const messages = await Message.findAll({
+            where: {
+                chatId,
+                attachmentName: { [Op.ne]: null },
+            },
+            attributes: ["id"],
+        });
+
+        return messages.map((message) => message.id);
+    },
+
+    async deleteChat(id) {
+        await Message.destroy({ where: { chatId: id } });
+        await Chat.destroy({ where: { id } });
     },
 
     async createMessage(data) {
@@ -55,10 +90,7 @@ const createChatRepository = (Chat, Message) => ({
     async getUserChats(userId) {
         const chats = await Chat.findAll({
             where: {
-                [Op.or]: [
-                    { firstUserId: userId },
-                    { secondUserId: userId }
-                ]
+                memberIds: { [Op.contains]: [Number(userId)] },
             },
         });
 
@@ -93,17 +125,17 @@ const createChatRepository = (Chat, Message) => ({
                     lastMessageCreatedAt: lastMessage?.createdAt ?? null,
                 };
             })
-            .sort((a, b) => {
-                const aTime = Date.parse(a.lastMessageCreatedAt ?? "") || 0;
-                const bTime = Date.parse(b.lastMessageCreatedAt ?? "") || 0;
+            .sort((left, right) => {
+                const leftTime = Date.parse(left.lastMessageCreatedAt ?? "") || 0;
+                const rightTime = Date.parse(right.lastMessageCreatedAt ?? "") || 0;
 
-                if (bTime !== aTime) {
-                    return bTime - aTime;
+                if (rightTime !== leftTime) {
+                    return rightTime - leftTime;
                 }
 
-                return Number(b.id) - Number(a.id);
+                return Number(right.id) - Number(left.id);
             });
-    }
+    },
 });
 
 module.exports = createChatRepository;

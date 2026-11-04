@@ -8,14 +8,18 @@ import UserAvatar from '../UserAvatar';
 function OpenChatCard({chatData, unread = false, onChatSelected}) {
     const [chatWithUser, setChatWithUser] = useState({});
     const {userId} = useAuth();
+    const isGroup = Boolean(chatData?.name);
+    const otherUserId = isGroup
+        ? null
+        : (chatData?.memberIds ?? []).map(Number).find((id) => id !== Number(userId));
     
     useEffect(() => {
         const getUser = async () => {
-            const otherUserId =
-                Number(chatData.firstUserId) === Number(userId)
-                    ? chatData.secondUserId
-                    : chatData.firstUserId;
-            
+            if (!otherUserId) {
+                setChatWithUser({});
+                return;
+            }
+
             try {
                 const response = await getUserById(otherUserId);
                 setChatWithUser(response.data);
@@ -29,15 +33,16 @@ function OpenChatCard({chatData, unread = false, onChatSelected}) {
             getUser();
 
         
-    }, [chatData?.id, chatData?.firstUserId, chatData?.secondUserId, userId]);
+    }, [chatData?.id, otherUserId, userId]);
 
     const lastMessageContent = chatData.lastMessageContent;
     const lastMessageSenderId = Number(chatData.lastMessageSenderId);
     const lastMessageTime = formatLastMessageTime(chatData.lastMessageCreatedAt);
+    const title = isGroup ? chatData.name : chatWithUser.username;
     const senderLabel =
         lastMessageSenderId === Number(userId)
             ? 'You'
-            : chatWithUser.username;
+            : (isGroup ? '' : chatWithUser.username);
 
     const handleClick = () => {
         onChatSelected(chatData.id);
@@ -50,17 +55,17 @@ function OpenChatCard({chatData, unread = false, onChatSelected}) {
         >
             <div className="profile-picture">
                 <UserAvatar
-                    userId={chatWithUser.id}
-                    username={chatWithUser.username}
-                    hasAvatar={chatWithUser.hasAvatar}
-                    version={chatWithUser.updatedAt}
+                    userId={isGroup ? undefined : chatWithUser.id}
+                    username={title}
+                    hasAvatar={isGroup ? false : chatWithUser.hasAvatar}
+                    version={isGroup ? undefined : chatWithUser.updatedAt}
                 />
             </div>
 
             <div className="text-data">
                 <div className="card-header">
                     <div className="username">
-                        <span>{chatWithUser.username}</span>
+                        <span>{title}</span>
                     </div>
                     {lastMessageTime && (
                         <span className="last-message-time">{lastMessageTime}</span>

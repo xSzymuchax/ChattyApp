@@ -9,9 +9,18 @@ jest.mock("../../src/modules/game/game.service", () => ({
     makeMove: jest.fn(),
 }));
 
+process.env.JWT_SECRET = "game-api-secret";
+
 const request = require("supertest");
+const jwt = require("jsonwebtoken");
 
 const app = require("../../src/app");
+
+const tokenFor = (userId) =>
+    jwt.sign({ userId, username: "player" }, process.env.JWT_SECRET);
+
+const asUser = (userId, req) =>
+    req.set("Authorization", `Bearer ${tokenFor(userId)}`);
 const gameService = require("../../src/modules/game/game.service");
 
 const room = {
@@ -45,7 +54,7 @@ describe("Game API", () => {
         it.each(["Checkers", "Abalone"])("creates a %s room", async (gameName) => {
             gameService.createGameRoom.mockReturnValue({ room: { ...room, gameName } });
 
-            const response = await request(app).post("/").send({
+            const response = await asUser(1, request(app).post("/")).send({
                 gameName,
                 firstUserId: 1,
                 secondUserId: 2,
@@ -74,7 +83,7 @@ describe("Game API", () => {
         ])("returns 400 when %j (%s)", async (body) => {
             gameService.createGameRoom.mockReturnValue({ room });
 
-            const response = await request(app).post("/").send(body);
+            const response = await asUser(1, request(app).post("/")).send(body);
 
             expect(response.status).toBe(400);
             expect(response.body).toEqual({ message: "Bad request." });
@@ -84,7 +93,7 @@ describe("Game API", () => {
         it("returns 409 when a player is already in a game", async () => {
             gameService.createGameRoom.mockReturnValue({ error: "busy" });
 
-            const response = await request(app).post("/").send({
+            const response = await asUser(1, request(app).post("/")).send({
                 gameName: "Checkers",
                 firstUserId: 1,
                 secondUserId: 2,
@@ -121,7 +130,7 @@ describe("Game API", () => {
                 throw new Error("state leaked");
             });
 
-            const response = await request(app).post("/").send({
+            const response = await asUser(1, request(app).post("/")).send({
                 gameName: "Checkers",
                 firstUserId: 1,
                 secondUserId: 2,
@@ -137,7 +146,7 @@ describe("Game API", () => {
         it("returns the room", async () => {
             gameService.getGameRoom.mockReturnValue(room);
 
-            const response = await request(app).get("/room-1");
+            const response = await asUser(1, request(app).get("/room-1"));
 
             expect(response.status).toBe(200);
             expect(response.body).toEqual(room);
@@ -147,7 +156,7 @@ describe("Game API", () => {
         it("returns 404 when the room does not exist", async () => {
             gameService.getGameRoom.mockReturnValue(null);
 
-            const response = await request(app).get("/missing");
+            const response = await asUser(1, request(app).get("/missing"));
 
             expect(response.status).toBe(404);
             expect(response.body).toEqual({ message: "Game room not found." });
@@ -158,7 +167,7 @@ describe("Game API", () => {
                 throw new Error("lookup leaked");
             });
 
-            const response = await request(app).get("/room-1");
+            const response = await asUser(1, request(app).get("/room-1"));
 
             expect(response.status).toBe(500);
             expect(response.body).toEqual({ message: "Internal server error." });
@@ -170,7 +179,7 @@ describe("Game API", () => {
         it("returns the user's games", async () => {
             gameService.getUserGames.mockReturnValue([room]);
 
-            const response = await request(app).get("/userGames/4");
+            const response = await asUser(4, request(app).get("/userGames/4"));
 
             expect(response.status).toBe(200);
             expect(response.body).toEqual([room]);
@@ -180,14 +189,14 @@ describe("Game API", () => {
         it("returns an empty list", async () => {
             gameService.getUserGames.mockReturnValue([]);
 
-            const response = await request(app).get("/userGames/4");
+            const response = await asUser(4, request(app).get("/userGames/4"));
 
             expect(response.status).toBe(200);
             expect(response.body).toEqual([]);
         });
 
         it.each(["0", "-1", "1.5", "abc"])("returns 400 for id %s", async (id) => {
-            const response = await request(app).get(`/userGames/${id}`);
+            const response = await asUser(1, request(app).get(`/userGames/${id}`));
 
             expect(response.status).toBe(400);
             expect(response.body).toEqual({ message: "Bad request." });
@@ -199,7 +208,7 @@ describe("Game API", () => {
                 throw new Error("list leaked");
             });
 
-            const response = await request(app).get("/userGames/4");
+            const response = await asUser(4, request(app).get("/userGames/4"));
 
             expect(response.status).toBe(500);
             expect(response.body).toEqual({ message: "Internal server error." });
@@ -211,7 +220,7 @@ describe("Game API", () => {
         it("returns pending invitations", async () => {
             gameService.getInvitations.mockReturnValue([room]);
 
-            const response = await request(app).get("/invitations/2");
+            const response = await asUser(2, request(app).get("/invitations/2"));
 
             expect(response.status).toBe(200);
             expect(response.body).toEqual([room]);
@@ -219,7 +228,7 @@ describe("Game API", () => {
         });
 
         it.each(["0", "-2", "nope"])("returns 400 for id %s", async (id) => {
-            const response = await request(app).get(`/invitations/${id}`);
+            const response = await asUser(1, request(app).get(`/invitations/${id}`));
 
             expect(response.status).toBe(400);
             expect(response.body).toEqual({ message: "Bad request." });
@@ -231,7 +240,7 @@ describe("Game API", () => {
                 throw new Error("invite leaked");
             });
 
-            const response = await request(app).get("/invitations/2");
+            const response = await asUser(2, request(app).get("/invitations/2"));
 
             expect(response.status).toBe(500);
             expect(response.body).toEqual({ message: "Internal server error." });
@@ -246,7 +255,7 @@ describe("Game API", () => {
         it(`completes ${action}`, async () => {
             gameService[method].mockReturnValue({ room: { ...room, status: "active" } });
 
-            const response = await request(app).post(path).send({ userId: 2 });
+            const response = await asUser(2, request(app).post(path)).send({ userId: 2 });
 
             expect(response.status).toBe(200);
             expect(response.body).toEqual({ ...room, status: "active" });
@@ -261,7 +270,7 @@ describe("Game API", () => {
         ])("returns 400 when %j (%s)", async (body) => {
             gameService[method].mockReturnValue({ room });
 
-            const response = await request(app).post(path).send(body);
+            const response = await asUser(2, request(app).post(path)).send(body);
 
             expect(response.status).toBe(400);
             expect(response.body).toEqual({ message: "Bad request." });
@@ -271,7 +280,7 @@ describe("Game API", () => {
         it("returns 404 when the room does not exist", async () => {
             gameService[method].mockReturnValue({ error: "not_found" });
 
-            const response = await request(app).post(path).send({ userId: 2 });
+            const response = await asUser(2, request(app).post(path)).send({ userId: 2 });
 
             expect(response.status).toBe(404);
             expect(response.body).toEqual({ message: "Game room not found." });
@@ -280,7 +289,7 @@ describe("Game API", () => {
         it("returns 403 when the caller cannot perform the action", async () => {
             gameService[method].mockReturnValue({ error: "forbidden" });
 
-            const response = await request(app).post(path).send({ userId: 2 });
+            const response = await asUser(2, request(app).post(path)).send({ userId: 2 });
 
             expect(response.status).toBe(403);
             expect(response.body).toEqual({ message: "Access denied." });
@@ -291,7 +300,7 @@ describe("Game API", () => {
                 throw new Error("action leaked");
             });
 
-            const response = await request(app).post(path).send({ userId: 2 });
+            const response = await asUser(2, request(app).post(path)).send({ userId: 2 });
 
             expect(response.status).toBe(500);
             expect(response.body).toEqual({ message: "Internal server error." });
@@ -304,7 +313,7 @@ describe("Game API", () => {
             const move = { from: 1, to: 2 };
             gameService.makeMove.mockReturnValue({ room: { ...room, status: "active" } });
 
-            const response = await request(app).post("/room-1/move").send({
+            const response = await asUser(1, request(app).post("/room-1/move")).send({
                 userId: 1,
                 move,
             });
@@ -318,7 +327,7 @@ describe("Game API", () => {
         });
 
         it("returns 400 when the move is missing", async () => {
-            const response = await request(app).post("/room-1/move").send({ userId: 1 });
+            const response = await asUser(1, request(app).post("/room-1/move")).send({ userId: 1 });
 
             expect(response.status).toBe(400);
             expect(response.body).toEqual({ message: "Bad request." });
@@ -326,7 +335,7 @@ describe("Game API", () => {
         });
 
         it("returns 400 when the user id is missing", async () => {
-            const response = await request(app).post("/room-1/move").send({ move: { from: 1 } });
+            const response = await asUser(1, request(app).post("/room-1/move")).send({ move: { from: 1 } });
 
             expect(response.status).toBe(400);
             expect(response.body).toEqual({ message: "Bad request." });
@@ -336,7 +345,7 @@ describe("Game API", () => {
         it("returns 404 when the room does not exist", async () => {
             gameService.makeMove.mockReturnValue({ error: "not_found" });
 
-            const response = await request(app).post("/room-1/move").send({
+            const response = await asUser(1, request(app).post("/room-1/move")).send({
                 userId: 1,
                 move: { from: 1 },
             });
@@ -348,7 +357,7 @@ describe("Game API", () => {
         it("returns 403 when the caller cannot move", async () => {
             gameService.makeMove.mockReturnValue({ error: "forbidden" });
 
-            const response = await request(app).post("/room-1/move").send({
+            const response = await asUser(1, request(app).post("/room-1/move")).send({
                 userId: 1,
                 move: { from: 1 },
             });
@@ -362,7 +371,7 @@ describe("Game API", () => {
             async (error) => {
                 gameService.makeMove.mockReturnValue({ error });
 
-                const response = await request(app).post("/room-1/move").send({
+                const response = await asUser(1, request(app).post("/room-1/move")).send({
                     userId: 1,
                     move: { from: 1 },
                 });
@@ -377,7 +386,7 @@ describe("Game API", () => {
                 throw new Error("rules leaked");
             });
 
-            const response = await request(app).post("/room-1/move").send({
+            const response = await asUser(1, request(app).post("/room-1/move")).send({
                 userId: 1,
                 move: { from: 1 },
             });

@@ -1,7 +1,10 @@
 const express = require("express");
 const controller = require("./game.controller");
+const checkAuth = require("../../middleware/auth");
 
 const router = express.Router();
+
+router.use(checkAuth);
 
 router.get("/invitations/:id", controller.getInvitations);
 router.get("/userGames/:id", controller.getUserGames);

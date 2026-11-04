@@ -12,24 +12,77 @@ const parseBodyInt = (value, minimum) => {
     return value;
 };
 
+const parseMemberIds = (value) => {
+    if (!Array.isArray(value) || value.length === 0)
+        return null;
+
+    const memberIds = [];
+
+    for (const item of value) {
+        const parsed = parseBodyInt(item, 1);
+
+        if (!parsed)
+            return null;
+
+        memberIds.push(parsed);
+    }
+
+    return memberIds;
+};
+
+const sendServiceError = (res, result, messages) => {
+    if (result?.error === "forbidden") {
+        res.status(403).json({message: "Access denied."});
+        return true;
+    }
+
+    if (result?.error === "bad_request") {
+        res.status(400).json({message: "Bad request."});
+        return true;
+    }
+
+    if (result?.error === "conflict") {
+        res.status(409).json({message: messages.conflict});
+        return true;
+    }
+
+    if (result?.error === "not_member") {
+        res.status(404).json({message: "Member not found."});
+        return true;
+    }
+
+    if (!result || result.error === "not_found") {
+        res.status(404).json({message: messages.notFound || "Chat not found."});
+        return true;
+    }
+
+    return false;
+};
+
 const createChat = async (req, res) => {
     try {
-        console.log(req.body);
-        const firstUserId = parseBodyInt(req.body.firstUserId, 1);
-        const secondUserId = parseBodyInt(req.body.secondUserId, 1);
-
         const requesterId = parsePositiveInt(req.user?.userId);
+        const memberIds = parseMemberIds(req.body?.memberIds);
+        const name = req.body?.name;
 
-        if (!firstUserId || !secondUserId || firstUserId === secondUserId || !requesterId)
+        if (!requesterId || !memberIds) {
             return res.status(400).json({message: "Bad request."});
+        }
+
+        if (name !== undefined && name !== null && typeof name !== "string") {
+            return res.status(400).json({message: "Bad request."});
+        }
 
         const result = await chatService.createChat(
-            { firstUserId, secondUserId },
+            { memberIds, name },
             requesterId
         );
 
         if (result?.error === "forbidden")
             return res.status(403).json({message: "Access denied."});
+
+        if (result?.error === "bad_request")
+            return res.status(400).json({message: "Bad request."});
 
         if (!result)
             return res.status(409).json({message: "Chat between those users already exists."});
@@ -62,7 +115,7 @@ const createMessage = async (req, res) => {
 
         res.status(200).json({
             message: result.message, 
-            recipientId: result.recipientId
+            recipientIds: result.recipientIds
         });
     } catch (error) {
         console.log(error);
@@ -94,7 +147,7 @@ const createAttachment = async (req, res) => {
 
         res.status(200).json({
             message: result.message,
-            recipientId: result.recipientId,
+            recipientIds: result.recipientIds,
         });
     } catch (error) {
         console.log(error);
@@ -203,6 +256,89 @@ const getChat = async (req, res) => {
     }
 };
 
+const deleteChat = async (req, res) => {
+    try {
+        const chatId = parsePositiveInt(req.params.id);
+        const requesterId = parsePositiveInt(req.user?.userId);
+
+        if (!chatId || !requesterId)
+            return res.status(400).json({message: "Bad request."});
+
+        const result = await chatService.deleteChat(chatId, requesterId);
+
+        if (sendServiceError(res, result, { notFound: "Chat not found." }))
+            return;
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message: "Internal server error."});
+    }
+};
+
+const addMember = async (req, res) => {
+    try {
+        const chatId = parsePositiveInt(req.params.id);
+        const requesterId = parsePositiveInt(req.user?.userId);
+        const userId = parseBodyInt(req.body?.userId, 1);
+
+        if (!chatId || !requesterId || !userId)
+            return res.status(400).json({message: "Bad request."});
+
+        const result = await chatService.addMember(chatId, requesterId, userId);
+
+        if (sendServiceError(res, result, { conflict: "User is already a member." }))
+            return;
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message: "Internal server error."});
+    }
+};
+
+const removeMember = async (req, res) => {
+    try {
+        const chatId = parsePositiveInt(req.params.id);
+        const userId = parsePositiveInt(req.params.userId);
+        const requesterId = parsePositiveInt(req.user?.userId);
+
+        if (!chatId || !userId || !requesterId)
+            return res.status(400).json({message: "Bad request."});
+
+        const result = await chatService.removeMember(chatId, requesterId, userId);
+
+        if (sendServiceError(res, result, { notFound: "Chat not found." }))
+            return;
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message: "Internal server error."});
+    }
+};
+
+const grantAdmin = async (req, res) => {
+    try {
+        const chatId = parsePositiveInt(req.params.id);
+        const userId = parsePositiveInt(req.params.userId);
+        const requesterId = parsePositiveInt(req.user?.userId);
+
+        if (!chatId || !userId || !requesterId)
+            return res.status(400).json({message: "Bad request."});
+
+        const result = await chatService.grantAdmin(chatId, requesterId, userId);
+
+        if (sendServiceError(res, result, { notFound: "Chat not found." }))
+            return;
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message: "Internal server error."});
+    }
+};
+
 module.exports = {
     createChat,
     createMessage,
@@ -210,5 +346,9 @@ module.exports = {
     getAttachment,
     getMessages,
     getUserChats,
-    getChat
+    getChat,
+    addMember,
+    removeMember,
+    grantAdmin,
+    deleteChat
 };

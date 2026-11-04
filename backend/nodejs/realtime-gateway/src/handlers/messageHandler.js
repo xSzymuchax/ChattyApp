@@ -29,11 +29,17 @@ async function handleMessage(ws, data) {
         console.log(response.data);
 
         if (response.status === 200) {
-            sendToUser(
-                response.data.recipientId,
-                response.data.message,
-                "message"
-            );
+            const recipientIds = Array.isArray(response.data.recipientIds)
+                ? response.data.recipientIds
+                : [];
+
+            for (const recipientId of recipientIds) {
+                sendToUser(
+                    recipientId,
+                    response.data.message,
+                    "message"
+                );
+            }
         }
     
     } catch (error) {

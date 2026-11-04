@@ -5,20 +5,28 @@ export const findChatBetweenUsers = (chats, firstUserId, secondUserId) => {
     const secondId = Number(secondUserId);
 
     return (chats ?? []).find((chat) => {
-        const chatFirstId = Number(chat.firstUserId);
-        const chatSecondId = Number(chat.secondUserId);
+        if (chat?.name) {
+            return false;
+        }
 
-        return (
-            (chatFirstId === firstId && chatSecondId === secondId) ||
-            (chatFirstId === secondId && chatSecondId === firstId)
-        );
+        const memberIds = (chat?.memberIds ?? []).map(Number);
+
+        return memberIds.length === 2
+            && memberIds.includes(firstId)
+            && memberIds.includes(secondId);
     });
 };
 
 export const createChat = (firstUserId, secondUserId) => {
     return chatApi.post('/chat', {
-        firstUserId: firstUserId,
-        secondUserId: secondUserId
+        memberIds: [firstUserId, secondUserId]
+    });
+}
+
+export const createGroupChat = (memberIds, name) => {
+    return chatApi.post('/chat', {
+        memberIds,
+        name,
     });
 }
 

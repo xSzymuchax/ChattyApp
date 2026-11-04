@@ -7,7 +7,8 @@ const { MessageDataRequestDto } = require("./dto/message-data.request");
 const { MessagesRangeRequestDto } = require("./dto/messages-range.request");
 const { MessageListResponseDto } = require("./dto/message-list.response");
 const { CreateMessageResponseDto } = require("./dto/create-message.response");
-const { IdParamsDto, AttachmentParamsDto } = require("./dto/id.params");
+const { IdParamsDto, MemberParamsDto, AttachmentParamsDto } = require("./dto/id.params");
+const { AddMemberRequestDto } = require("./dto/add-member.request");
 const { ErrorResponseDto } = require("./dto/error.response");
 
 const registry = new OpenAPIRegistry();
@@ -102,7 +103,7 @@ registry.registerPath({
     method: "post",
     path: "/",
     tags: ["Chat"],
-    summary: "Create a chat between the signed-in user and somebody else. The other user receives a chatCreated WebSocket frame.",
+    summary: "Create a direct chat or a named group. Other members receive a chatCreated WebSocket frame.",
 
     request: {
         body: {
@@ -135,7 +136,7 @@ registry.registerPath({
     method: "post",
     path: "/{id}/message",
     tags: ["Chat"],
-    summary: "Create a text message as the signed-in user. The other participant receives a message WebSocket frame from the realtime gateway.",
+    summary: "Create a text message as the signed-in user. Each other member receives a message WebSocket frame from the realtime gateway.",
 
     request: {
         params: IdParamsDto,
@@ -150,7 +151,7 @@ registry.registerPath({
 
     responses: {
         200: {
-            description: "Created message and recipient user id.",
+            description: "Created message and the other members.",
             content: {
                 "application/json": {
                     schema: CreateMessageResponseDto,
@@ -169,7 +170,7 @@ registry.registerPath({
     method: "post",
     path: "/{id}/attachment",
     tags: ["Chat"],
-    summary: "Upload an attachment or image (max 50 MB) as the signed-in user. Images are compressed to WebP. The other participant receives a message WebSocket frame.",
+    summary: "Upload an attachment or image (max 50 MB) as the signed-in user. Images are compressed to WebP. Each other member receives a message WebSocket frame.",
 
     request: {
         params: IdParamsDto,
@@ -177,7 +178,7 @@ registry.registerPath({
 
     responses: {
         200: {
-            description: "Created message and recipient user id.",
+            description: "Created message and the other members.",
             content: {
                 "application/json": {
                     schema: CreateMessageResponseDto,
@@ -239,6 +240,117 @@ registry.registerPath({
                     schema: MessageListResponseDto,
                 },
             },
+        },
+        400: errorContent("Bad request."),
+        401: unauthorized,
+        403: errorContent("Access denied."),
+        404: errorContent("Chat not found."),
+        500: errorContent("Internal server error."),
+    },
+});
+
+registry.registerPath({
+    method: "post",
+    path: "/{id}/members",
+    tags: ["Chat"],
+    summary: "Add a user to a named group. Any member may add someone. The new member receives chatCreated; the others receive chatUpdated.",
+
+    request: {
+        params: IdParamsDto,
+        body: {
+            content: {
+                "application/json": {
+                    schema: AddMemberRequestDto,
+                },
+            },
+        },
+    },
+
+    responses: {
+        200: {
+            description: "The group after the user was added.",
+            content: {
+                "application/json": {
+                    schema: ChatInfoResponseDto,
+                },
+            },
+        },
+        400: errorContent("Bad request."),
+        401: unauthorized,
+        403: errorContent("Access denied."),
+        404: errorContent("Chat not found."),
+        409: errorContent("User is already a member."),
+        500: errorContent("Internal server error."),
+    },
+});
+
+registry.registerPath({
+    method: "delete",
+    path: "/{id}/members/{userId}",
+    tags: ["Chat"],
+    summary: "Leave a group, or remove another member when the caller has creator permissions.",
+
+    request: {
+        params: MemberParamsDto,
+    },
+
+    responses: {
+        200: {
+            description: "The group after the change, or the removed chat id when it became empty.",
+            content: {
+                "application/json": {
+                    schema: ChatInfoResponseDto,
+                },
+            },
+        },
+        400: errorContent("Bad request."),
+        401: unauthorized,
+        403: errorContent("Access denied."),
+        404: errorContent("Chat not found."),
+        500: errorContent("Internal server error."),
+    },
+});
+
+registry.registerPath({
+    method: "post",
+    path: "/{id}/members/{userId}/admin",
+    tags: ["Chat"],
+    summary: "Give a member the same permissions as the chat creator. The caller must already have those permissions.",
+
+    request: {
+        params: MemberParamsDto,
+    },
+
+    responses: {
+        200: {
+            description: "The group after the permission was granted.",
+            content: {
+                "application/json": {
+                    schema: ChatInfoResponseDto,
+                },
+            },
+        },
+        400: errorContent("Bad request."),
+        401: unauthorized,
+        403: errorContent("Access denied."),
+        404: errorContent("Chat not found."),
+        500: errorContent("Internal server error."),
+    },
+});
+
+registry.registerPath({
+    method: "delete",
+    path: "/{id}",
+    tags: ["Chat"],
+    summary: "Delete a named group, its messages, and its attachment files. The caller must have creator permissions.",
+
+    request: {
+        params: IdParamsDto,
+    },
+
+    responses: {
+        200: {
+            description: "The deleted chat id.",
         },
         400: errorContent("Bad request."),
         401: unauthorized,

@@ -8,8 +8,10 @@ describe("chat response DTOs", () => {
             findByPk: async () => ({
                 toJSON: () => ({
                     id: 1,
-                    firstUserId: 1,
-                    secondUserId: 2,
+                    name: null,
+                    createdBy: 1,
+                    memberIds: [1, 2],
+                    adminIds: [1],
                     createdAt: "2026-01-01T00:00:00.000Z",
                     updatedAt: "2026-01-01T00:00:00.000Z",
                 }),
@@ -28,8 +30,10 @@ describe("chat response DTOs", () => {
                 id: 1,
                 toJSON: () => ({
                     id: 1,
-                    firstUserId: 1,
-                    secondUserId: 2,
+                    name: null,
+                    createdBy: 1,
+                    memberIds: [1, 2],
+                    adminIds: [1],
                     createdAt: "2026-01-01T00:00:00.000Z",
                     updatedAt: "2026-01-02T00:00:00.000Z",
                 }),

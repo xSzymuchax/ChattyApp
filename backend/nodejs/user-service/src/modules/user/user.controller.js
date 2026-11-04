@@ -8,13 +8,21 @@ const isInvalidUserId = (id) => {
     return !Number.isInteger(parsed) || parsed <= 0;
 };
 
+const toPublicUser = (user) => {
+    if (!user || typeof user !== "object" || Array.isArray(user))
+        return user;
+
+    const { email, ...publicUser } = user;
+    return publicUser;
+};
+
 const getUsers = async (req, res) => {
     try{
         const { username } = req.query;
         console.log("USERNAME: ", username);
 
         const result = await userService.getUsers(username);
-        res.status(200).json(result);
+        res.status(200).json((result ?? []).map(toPublicUser));
     } catch (error){
         console.log(error);
         res.status(500).json({
@@ -38,7 +46,7 @@ const createUser = async (req, res) => {
         if (!result)
             return res.status(409).json({message: "Account with that username/email exists."});
 
-        res.status(200).json(result);
+        res.status(200).json(toPublicUser(result));
     } catch (error) {
         if (error instanceof UniqueConstraintError) {
             return res.status(409).json({
@@ -63,7 +71,7 @@ const getUser = async (req, res) => {
         if (!result) 
             return res.status(404).json({message: "User not found."});
 
-        res.status(200).json(result);
+        res.status(200).json(toPublicUser(result));
     } catch (error){
         console.log(error);
         res.status(500).json({message: "Internal server error."});
@@ -118,7 +126,7 @@ const updateAvatar = async (req, res) => {
         if (!result)
             return res.status(404).json({ message: "User not found." });
 
-        res.status(200).json(result);
+        res.status(200).json(toPublicUser(result));
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Internal server error." });
@@ -148,7 +156,7 @@ const updateUser = async (req, res) => {
         if (!result)
             return res.status(404).json({message: "User not found."});
 
-        res.status(200).json(result);
+        res.status(200).json(toPublicUser(result));
     } catch (error) {
         console.log(error);
         res.status(500).json({message: "Internal server error."})
@@ -191,7 +199,7 @@ const checkUserExistByEmail = async (req, res) => {
         if (!result)
             return res.status(404).json({message: "User not found."});
 
-        res.status(200).json(result);
+        res.status(200).json(toPublicUser(result));
     } catch (error) {
         console.log(error);
         res.status(500).json({message: "Internal server error."});

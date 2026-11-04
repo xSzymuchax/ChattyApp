@@ -1,4 +1,5 @@
 process.env.JWT_SECRET = "integration-secret";
+process.env.INTERNAL_SERVICE_TOKEN = "internal-test-token";
 
 var mockRepository;
 
@@ -69,6 +70,12 @@ const app = require("../../../src/app");
 const tokenFor = (userId) =>
     jwt.sign({ userId, username: "ada" }, process.env.JWT_SECRET);
 
+const internal = (req) =>
+    req.set("X-Internal-Token", process.env.INTERNAL_SERVICE_TOKEN);
+
+const authed = (req, userId = 1) =>
+    req.set("Authorization", `Bearer ${tokenFor(userId)}`);
+
 describe("user integration", () => {
     beforeEach(() => {
         jest.spyOn(console, "log").mockImplementation(() => {});
@@ -80,7 +87,7 @@ describe("user integration", () => {
     });
 
     it("creates a user and reads that user back", async () => {
-        const created = await request(app).post("/").send({
+        const created = await internal(request(app).post("/")).send({
             username: "ada",
             email: "ada@example.com",
             description: "hi",
@@ -90,20 +97,20 @@ describe("user integration", () => {
         expect(created.body).toEqual(expect.objectContaining({
             id: 1,
             username: "ada",
-            email: "ada@example.com",
         }));
+        expect(created.body.email).toBeUndefined();
 
-        const fetched = await request(app).get("/1");
+        const fetched = await authed(request(app).get("/1"));
         expect(fetched.status).toBe(200);
         expect(fetched.body.username).toBe("ada");
 
-        const listed = await request(app).get("/").query({ username: "ad" });
+        const listed = await authed(request(app).get("/")).query({ username: "ad" });
         expect(listed.status).toBe(200);
         expect(listed.body).toHaveLength(1);
     });
 
     it("rejects a create request that has no username", async () => {
-        const response = await request(app).post("/").send({ email: "ada@example.com" });
+        const response = await internal(request(app).post("/")).send({ email: "ada@example.com" });
 
         expect(response.status).toBe(400);
         expect(response.body).toEqual({ message: "Bad request." });
@@ -111,12 +118,12 @@ describe("user integration", () => {
     });
 
     it("rejects a duplicate username", async () => {
-        await request(app).post("/").send({
+        await internal(request(app).post("/")).send({
             username: "ada",
             email: "ada@example.com",
         });
 
-        const response = await request(app).post("/").send({
+        const response = await internal(request(app).post("/")).send({
             username: "ada",
             email: "other@example.com",
         });
@@ -126,8 +133,8 @@ describe("user integration", () => {
     });
 
     it("returns 404 for an unknown user and an unknown active email", async () => {
-        const byId = await request(app).get("/4");
-        const byEmail = await request(app).post("/userOfEmailActive").send({
+        const byId = await authed(request(app).get("/4"));
+        const byEmail = await internal(request(app).post("/userOfEmailActive")).send({
             email: "missing@example.com",
         });
 
@@ -136,7 +143,7 @@ describe("user integration", () => {
     });
 
     it("lets the owner update and delete the account", async () => {
-        await request(app).post("/").send({
+        await internal(request(app).post("/")).send({
             username: "ada",
             email: "ada@example.com",
             description: "old",
@@ -157,14 +164,14 @@ describe("user integration", () => {
         expect(removed.status).toBe(200);
         expect(removed.body).toBe(true);
 
-        const lookup = await request(app).post("/userOfEmailActive").send({
+        const lookup = await internal(request(app).post("/userOfEmailActive")).send({
             email: "ada@example.com",
         });
         expect(lookup.status).toBe(404);
     });
 
     it("denies an update from a different user", async () => {
-        await request(app).post("/").send({
+        await internal(request(app).post("/")).send({
             username: "ada",
             email: "ada@example.com",
         });
