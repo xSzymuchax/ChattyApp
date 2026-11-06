@@ -48,13 +48,9 @@ const fileTooLarge = {
 
 registry.registerPath({
     method: "get",
-    path: "/userChats/{id}",
+    path: "/",
     tags: ["Chat"],
-    summary: "Get all chats that include the signed-in user. Requires a Bearer token.",
-
-    request: {
-        params: IdParamsDto,
-    },
+    summary: "Get chats of the signed-in user. Requires a Bearer token.",
 
     responses: {
         200: {
@@ -67,7 +63,6 @@ registry.registerPath({
         },
         400: errorContent("Bad request."),
         401: unauthorized,
-        403: errorContent("Access denied."),
         500: errorContent("Internal server error."),
     },
 });
@@ -134,7 +129,7 @@ registry.registerPath({
 
 registry.registerPath({
     method: "post",
-    path: "/{id}/message",
+    path: "/{id}/messages",
     tags: ["Chat"],
     summary: "Create a text message as the signed-in user. Each other member receives a message WebSocket frame from the realtime gateway.",
 
@@ -216,20 +211,14 @@ registry.registerPath({
 });
 
 registry.registerPath({
-    method: "post",
+    method: "get",
     path: "/{id}/messages",
     tags: ["Chat"],
     summary: "Get the latest messages in a chat for a participant. start and end are integers counting from the newest message (start inclusive, end exclusive).",
 
     request: {
         params: IdParamsDto,
-        body: {
-            content: {
-                "application/json": {
-                    schema: MessagesRangeRequestDto,
-                },
-            },
-        },
+        query: MessagesRangeRequestDto,
     },
 
     responses: {
@@ -312,8 +301,8 @@ registry.registerPath({
 });
 
 registry.registerPath({
-    method: "post",
-    path: "/{id}/members/{userId}/admin",
+    method: "put",
+    path: "/{id}/admins/{userId}",
     tags: ["Chat"],
     summary: "Give a member the same permissions as the chat creator. The caller must already have those permissions.",
 
@@ -342,7 +331,7 @@ registry.registerPath({
     method: "delete",
     path: "/{id}",
     tags: ["Chat"],
-    summary: "Delete a named group, its messages, and its attachment files. The caller must have creator permissions.",
+    summary: "Mark a named group inactive. The caller must have admin permissions. Messages stay on the server.",
 
     request: {
         params: IdParamsDto,

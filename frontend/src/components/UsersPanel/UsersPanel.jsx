@@ -75,7 +75,7 @@ function UsersPanel({selectedChatId, onChatSelected, lastMessageEvent}) {
         }
 
         try {
-            const response = await getUserChats(userId);
+            const response = await getUserChats();
             setFoundChats(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.log("UsersPanel get chats error", error);

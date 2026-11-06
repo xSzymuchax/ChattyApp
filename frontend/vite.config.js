@@ -11,7 +11,7 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
-      '/ws': {
+      '/ws/v1': {
         target: 'ws://localhost:3300',
         ws: true,
         changeOrigin: true,

@@ -114,8 +114,8 @@ services:
       context: .
       dockerfile: docker/caddy/Dockerfile
       args:
-        VITE_API_URL: /api
-        VITE_RT_API_URL: /ws
+        VITE_API_URL: /api/v1
+        VITE_RT_API_URL: /ws/v1
         VITE_TOKEN_KEY: chatty.authToken
     restart: unless-stopped
     ports:

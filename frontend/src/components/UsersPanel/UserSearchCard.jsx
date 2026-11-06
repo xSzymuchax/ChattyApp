@@ -26,7 +26,7 @@ function UserSearchCard({userData, getChatWithUser, onChatSelected, onChatReady}
                 }
             }
 
-            const chatsResponse = await getUserChats(userId);
+            const chatsResponse = await getUserChats();
             const existingAfterConflict = findChatBetweenUsers(
                 chatsResponse.data,
                 userId,

@@ -64,7 +64,7 @@ function GamesPanel({visible, onToggle, opponent, chatId, invitationsTabToken, o
             return;
 
         try {
-            const response = await getUserGames(userId);
+            const response = await getUserGames();
             const rooms = response.data ?? [];
             const current = rooms.find((item) =>
                 item.status === 'active' ||
@@ -81,7 +81,7 @@ function GamesPanel({visible, onToggle, opponent, chatId, invitationsTabToken, o
             return;
 
         try {
-            const response = await getGameInvitations(userId);
+            const response = await getGameInvitations();
             const pending = response.data ?? [];
             const withNames = await Promise.all(pending.map(withHostName));
             setInvitations(withNames);

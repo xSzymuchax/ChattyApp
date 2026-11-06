@@ -48,11 +48,11 @@ describe("Chat API", () => {
     });
 
     describe.each([
+        ["get", "/"],
         ["get", "/4"],
+        ["get", "/4/messages"],
         ["get", "/4/messages/8/attachment"],
-        ["get", "/userChats/4"],
         ["post", "/"],
-        ["post", "/4/message"],
         ["post", "/4/messages"],
         ["post", "/4/attachment"],
     ])("%s %s", (method, path) => {
@@ -159,49 +159,22 @@ describe("Chat API", () => {
         });
     });
 
-    describe("GET /userChats/:id", () => {
+    describe("GET /", () => {
         it("returns the caller's chats", async () => {
             const chats = [{ id: 4 }];
             chatService.getUserChats.mockResolvedValue(chats);
 
-            const response = await authed(request(app).get("/userChats/7"));
+            const response = await authed(request(app).get("/"));
 
             expect(response.status).toBe(200);
             expect(response.body).toEqual(chats);
-            expect(chatService.getUserChats).toHaveBeenCalledWith(7, 7);
-        });
-
-        it("passes a different path id and requester id to the service", async () => {
-            chatService.getUserChats.mockResolvedValue([]);
-
-            const response = await authed(request(app).get("/userChats/9"));
-
-            expect(response.status).toBe(200);
-            expect(response.body).toEqual([]);
-            expect(chatService.getUserChats).toHaveBeenCalledWith(9, 7);
-        });
-
-        it.each(["0", "-3", "nope"])("returns 400 for id %s", async (id) => {
-            const response = await authed(request(app).get(`/userChats/${id}`));
-
-            expect(response.status).toBe(400);
-            expect(response.body).toEqual({ message: "Bad request." });
-            expect(chatService.getUserChats).not.toHaveBeenCalled();
-        });
-
-        it("returns a documented status when the caller asks for another user's chats", async () => {
-            chatService.getUserChats.mockResolvedValue({ error: "forbidden" });
-
-            const response = await authed(request(app).get("/userChats/9"));
-
-            expect(response.status).toBe(403);
-            expect(response.body).toEqual({ message: "Access denied." });
+            expect(chatService.getUserChats).toHaveBeenCalledWith(7);
         });
 
         it("returns 500 without leaking the internal error", async () => {
             chatService.getUserChats.mockRejectedValue(new Error("list leaked"));
 
-            const response = await authed(request(app).get("/userChats/7"));
+            const response = await authed(request(app).get("/"));
 
             expect(response.status).toBe(500);
             expect(response.body).toEqual({ message: "Internal server error." });
@@ -304,7 +277,7 @@ describe("Chat API", () => {
         });
     });
 
-    describe("POST /:id/message", () => {
+    describe("POST /:id/messages", () => {
         it("creates a message when the body has only content", async () => {
             chatService.createMessage.mockResolvedValue({
                 message: {
@@ -317,7 +290,7 @@ describe("Chat API", () => {
                 recipientIds: [9],
             });
 
-            const response = await authed(request(app).post("/4/message")).send({
+            const response = await authed(request(app).post("/4/messages")).send({
                 content: "hi",
             });
 
@@ -335,7 +308,7 @@ describe("Chat API", () => {
                 recipientIds: [9],
             });
 
-            const response = await authed(request(app).post("/4/message")).send({
+            const response = await authed(request(app).post("/4/messages")).send({
                 content: "hi",
                 senderId: 999,
             });
@@ -357,7 +330,7 @@ describe("Chat API", () => {
                 recipientIds: [9],
             });
 
-            const response = await authed(request(app).post("/4/message")).send({
+            const response = await authed(request(app).post("/4/messages")).send({
                 content: " ",
             });
 
@@ -375,7 +348,7 @@ describe("Chat API", () => {
             ["4", { content: "" }],
             ["4", { content: 0 }],
         ])("returns 400 for chat %s and body %j", async (id, body) => {
-            const response = await authed(request(app).post(`/${id}/message`)).send(body);
+            const response = await authed(request(app).post(`/${id}/messages`)).send(body);
 
             expect(response.status).toBe(400);
             expect(response.body).toEqual({ message: "Bad request." });
@@ -385,7 +358,7 @@ describe("Chat API", () => {
         it("returns 404 when the chat does not exist", async () => {
             chatService.createMessage.mockResolvedValue({ error: "not_found" });
 
-            const response = await authed(request(app).post("/4/message")).send({
+            const response = await authed(request(app).post("/4/messages")).send({
                 content: "hi",
             });
 
@@ -396,7 +369,7 @@ describe("Chat API", () => {
         it("returns 403 when the caller is not a participant", async () => {
             chatService.createMessage.mockResolvedValue({ error: "forbidden" });
 
-            const response = await authed(request(app).post("/4/message")).send({
+            const response = await authed(request(app).post("/4/messages")).send({
                 content: "hi",
             });
 
@@ -407,7 +380,7 @@ describe("Chat API", () => {
         it("returns 500 when the service returns nothing", async () => {
             chatService.createMessage.mockResolvedValue(null);
 
-            const response = await authed(request(app).post("/4/message")).send({
+            const response = await authed(request(app).post("/4/messages")).send({
                 content: "hi",
             });
 
@@ -418,7 +391,7 @@ describe("Chat API", () => {
         it("returns 500 without leaking the internal error", async () => {
             chatService.createMessage.mockRejectedValue(new Error("write leaked"));
 
-            const response = await authed(request(app).post("/4/message")).send({
+            const response = await authed(request(app).post("/4/messages")).send({
                 content: "hi",
             });
 
@@ -428,31 +401,28 @@ describe("Chat API", () => {
         });
     });
 
-    describe("POST /:id/messages", () => {
+    describe("GET /:id/messages", () => {
+        const pageRequest = (path, query) =>
+            authed(request(app).get(path)).query(query);
+
         it("returns a slice of messages", async () => {
             const page = [{ id: 1, content: "hi" }];
             chatService.getMessages.mockResolvedValue(page);
 
-            const response = await authed(request(app).post("/4/messages")).send({
-                start: 0,
-                end: 0,
-            });
+            const response = await pageRequest("/4/messages", { start: 0, end: 0 });
 
             expect(response.status).toBe(200);
             expect(response.body).toEqual(page);
             expect(chatService.getMessages).toHaveBeenCalledWith(4, 0, 0, 7);
         });
 
-        it("returns 400 when the range bounds are strings", async () => {
+        it("accepts numeric query strings", async () => {
             chatService.getMessages.mockResolvedValue([]);
 
-            const response = await authed(request(app).post("/4/messages")).send({
-                start: "0",
-                end: "2",
-            });
+            const response = await pageRequest("/4/messages", { start: "0", end: "2" });
 
-            expect(response.status).toBe(400);
-            expect(response.body).toEqual({ message: "Bad request." });
+            expect(response.status).toBe(200);
+            expect(chatService.getMessages).toHaveBeenCalledWith(4, 0, 2, 7);
         });
 
         it.each([
@@ -462,9 +432,9 @@ describe("Chat API", () => {
             [{ start: "1.2", end: 2 }, "a bound is not an integer string"],
             [{ end: 2 }, "the start is missing"],
             [{ start: 0 }, "the end is missing"],
-            [{}, "the body is empty"],
-        ])("returns 400 when %j (%s)", async (body) => {
-            const response = await authed(request(app).post("/4/messages")).send(body);
+            [{}, "the query is empty"],
+        ])("returns 400 when %j (%s)", async (query) => {
+            const response = await pageRequest("/4/messages", query);
 
             expect(response.status).toBe(400);
             expect(response.body).toEqual({ message: "Bad request." });
@@ -472,10 +442,7 @@ describe("Chat API", () => {
         });
 
         it("returns 400 for a non-numeric chat id", async () => {
-            const response = await authed(request(app).post("/abc/messages")).send({
-                start: 0,
-                end: 1,
-            });
+            const response = await pageRequest("/abc/messages", { start: 0, end: 1 });
 
             expect(response.status).toBe(400);
             expect(chatService.getMessages).not.toHaveBeenCalled();
@@ -484,10 +451,7 @@ describe("Chat API", () => {
         it("returns a documented status when the caller is not a participant", async () => {
             chatService.getMessages.mockResolvedValue({ error: "forbidden" });
 
-            const response = await authed(request(app).post("/4/messages")).send({
-                start: 0,
-                end: 10,
-            });
+            const response = await pageRequest("/4/messages", { start: 0, end: 10 });
 
             expect(response.status).toBe(403);
             expect(response.body).toEqual({ message: "Access denied." });
@@ -498,10 +462,7 @@ describe("Chat API", () => {
             async (result) => {
                 chatService.getMessages.mockResolvedValue(result);
 
-                const response = await authed(request(app).post("/4/messages")).send({
-                    start: 0,
-                    end: 10,
-                });
+                const response = await pageRequest("/4/messages", { start: 0, end: 10 });
 
                 expect(response.status).toBe(404);
                 expect(response.body).toEqual({ message: "Chat not found." });
@@ -511,10 +472,7 @@ describe("Chat API", () => {
         it("returns 500 without leaking the internal error", async () => {
             chatService.getMessages.mockRejectedValue(new Error("page leaked"));
 
-            const response = await authed(request(app).post("/4/messages")).send({
-                start: 0,
-                end: 10,
-            });
+            const response = await pageRequest("/4/messages", { start: 0, end: 10 });
 
             expect(response.status).toBe(500);
             expect(response.body).toEqual({ message: "Internal server error." });

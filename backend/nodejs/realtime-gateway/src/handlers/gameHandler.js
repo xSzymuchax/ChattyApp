@@ -43,9 +43,9 @@ async function handleGameAccept(ws, data) {
             return;
         }
 
-        const response = await axios.post(
-            `${gameServiceUrl()}/${data.roomId}/accept`,
-            { userId: ws.userId },
+        const response = await axios.patch(
+            `${gameServiceUrl()}/${data.roomId}`,
+            { status: "active" },
             { headers: authHeaders(ws) }
         );
 
@@ -71,9 +71,8 @@ async function handleGameLeave(ws, data) {
             return;
         }
 
-        const response = await axios.post(
-            `${gameServiceUrl()}/${data.roomId}/leave`,
-            { userId: ws.userId },
+        const response = await axios.delete(
+            `${gameServiceUrl()}/${data.roomId}`,
             { headers: authHeaders(ws) }
         );
 
@@ -101,11 +100,8 @@ async function handleGameMove(ws, data) {
         }
 
         const response = await axios.post(
-            `${gameServiceUrl()}/${data.roomId}/move`,
-            {
-                userId: ws.userId,
-                move: data.move,
-            },
+            `${gameServiceUrl()}/${data.roomId}/moves`,
+            { move: data.move },
             { headers: authHeaders(ws) }
         );
 

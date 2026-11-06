@@ -12,22 +12,20 @@ export const getGameRoom = (roomId) => {
     return gameApi.get(`/game/${roomId}`);
 };
 
-export const getUserGames = (userId) => {
-    return gameApi.get(`/game/userGames/${userId}`);
+export const getUserGames = () => {
+    return gameApi.get("/game");
 };
 
-export const getGameInvitations = (userId) => {
-    return gameApi.get(`/game/invitations/${userId}`);
+export const getGameInvitations = () => {
+    return gameApi.get("/game/invitations");
 };
 
-export const acceptGameInvitation = (roomId, userId) => {
-    return gameApi.post(`/game/${roomId}/accept`, {
-        userId,
+export const acceptGameInvitation = (roomId) => {
+    return gameApi.patch(`/game/${roomId}`, {
+        status: "active",
     });
 };
 
-export const leaveGame = (roomId, userId) => {
-    return gameApi.post(`/game/${roomId}/leave`, {
-        userId,
-    });
+export const leaveGame = (roomId) => {
+    return gameApi.delete(`/game/${roomId}`);
 };

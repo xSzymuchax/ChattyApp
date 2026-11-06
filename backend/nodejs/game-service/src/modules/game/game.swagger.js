@@ -3,9 +3,8 @@ const { OpenAPIRegistry } = require("@asteasolutions/zod-to-openapi");
 const { GameInfoResponseDto, GameListResponseDto } = require("./dto/game-info.response");
 const { GameDataRequestDto } = require("./dto/game-data.request");
 const { MoveDataRequestDto } = require("./dto/move-data.request");
-const { UserActionRequestDto } = require("./dto/user-action.request");
+const { GameStatusRequestDto } = require("./dto/game-status.request");
 const { IdParamsDto } = require("./dto/id.params");
-const { UserIdParamsDto } = require("./dto/user-id.params");
 const { ErrorResponseDto } = require("./dto/error.response");
 
 const registry = new OpenAPIRegistry();
@@ -20,25 +19,11 @@ const errorContent = (example) => ({
     },
 });
 
-const userActionBody = {
-    body: {
-        content: {
-            "application/json": {
-                schema: UserActionRequestDto,
-            },
-        },
-    },
-};
-
 registry.registerPath({
     method: "get",
-    path: "/invitations/{id}",
+    path: "/invitations",
     tags: ["Game"],
-    summary: "Get pending game invitations for a user.",
-
-    request: {
-        params: UserIdParamsDto,
-    },
+    summary: "Get pending game invitations for the signed-in user.",
 
     responses: {
         200: {
@@ -56,13 +41,9 @@ registry.registerPath({
 
 registry.registerPath({
     method: "get",
-    path: "/userGames/{id}",
+    path: "/",
     tags: ["Game"],
-    summary: "Get game rooms that include the given user.",
-
-    request: {
-        params: UserIdParamsDto,
-    },
+    summary: "Get game rooms that include the signed-in user.",
 
     responses: {
         200: {
@@ -135,14 +116,20 @@ registry.registerPath({
 });
 
 registry.registerPath({
-    method: "post",
-    path: "/{id}/accept",
+    method: "patch",
+    path: "/{id}",
     tags: ["Game"],
-    summary: "Accept a pending game invitation.",
+    summary: "Accept a pending invitation by setting the room status to active.",
 
     request: {
         params: IdParamsDto,
-        ...userActionBody,
+        body: {
+            content: {
+                "application/json": {
+                    schema: GameStatusRequestDto,
+                },
+            },
+        },
     },
 
     responses: {
@@ -162,14 +149,13 @@ registry.registerPath({
 });
 
 registry.registerPath({
-    method: "post",
-    path: "/{id}/leave",
+    method: "delete",
+    path: "/{id}",
     tags: ["Game"],
-    summary: "Leave or decline a game room.",
+    summary: "Leave or decline a game room. The signed-in user must be a participant.",
 
     request: {
         params: IdParamsDto,
-        ...userActionBody,
     },
 
     responses: {
@@ -190,9 +176,9 @@ registry.registerPath({
 
 registry.registerPath({
     method: "post",
-    path: "/{id}/move",
+    path: "/{id}/moves",
     tags: ["Game"],
-    summary: "Submit a move. Game rules are applied by the rules catalog.",
+    summary: "Add a move for the signed-in user. Game rules are applied by the rules catalog.",
 
     request: {
         params: IdParamsDto,

@@ -55,7 +55,7 @@ app.use(cors({
 app.use('/swagger', swaggerUI.serve, swaggerUI.setup(swaggerDoc));
 
 app.use(
-    '/auth',
+    '/v1/auth',
     createProxyMiddleware({
         target: process.env.AUTH_SERVICE_URL,
         changeOrigin: true
@@ -63,7 +63,7 @@ app.use(
 );
 
 app.use(
-    '/user',
+    '/v1/user',
     createProxyMiddleware({
         target: process.env.USER_SERVICE_URL,
         changeOrigin: true
@@ -71,7 +71,7 @@ app.use(
 );
 
 app.use(
-    '/chat',
+    '/v1/chat',
     createProxyMiddleware({
         target: process.env.CHAT_SERVICE_URL,
         changeOrigin: true,
@@ -81,7 +81,7 @@ app.use(
 );
 
 app.use(
-    '/game',
+    '/v1/game',
     createProxyMiddleware({
         target: process.env.GAME_SERVICE_URL,
         changeOrigin: true

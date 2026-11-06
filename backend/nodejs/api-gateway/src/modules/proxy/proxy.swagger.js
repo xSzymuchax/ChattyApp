@@ -8,41 +8,41 @@ const methods = ["get", "post", "put", "patch", "delete"];
 
 const mounts = [
     {
-        prefix: "auth",
+        prefix: "v1/auth",
         tag: "Auth",
         summary: "Forward to the auth service.",
         description:
-            "Client path /auth/<path> is proxied to AUTH_SERVICE_URL. " +
+            "Client path /v1/auth/<path> is proxied to AUTH_SERVICE_URL. " +
             "Request and response shapes are documented by that service at its /swagger. " +
-            "Examples: POST /auth/register, POST /auth/login, POST /auth/refresh.",
+            "Examples: POST /v1/auth/register, POST /v1/auth/login, POST /v1/auth/refresh.",
     },
     {
-        prefix: "user",
+        prefix: "v1/user",
         tag: "User",
         summary: "Forward to the user service.",
         description:
-            "Client path /user/<path> is proxied to USER_SERVICE_URL. " +
+            "Client path /v1/user/<path> is proxied to USER_SERVICE_URL. " +
             "Request and response shapes are documented by that service at its /swagger. " +
-            "Examples: GET /user, GET /user/7, PUT /user/7, POST /user/userOfEmailActive.",
+            "Examples: GET /v1/user, GET /v1/user/7, PUT /v1/user/7, POST /v1/user/userOfEmailActive.",
     },
     {
-        prefix: "chat",
+        prefix: "v1/chat",
         tag: "Chat",
         summary: "Forward to the chat service.",
         description:
-            "Client path /chat/<path> is proxied to CHAT_SERVICE_URL. " +
+            "Client path /v1/chat/<path> is proxied to CHAT_SERVICE_URL. " +
             "The proxy waits up to 180 seconds, which covers attachment uploads. " +
             "Request and response shapes are documented by that service at its /swagger. " +
-            "Examples: POST /chat, POST /chat/4/message, POST /chat/4/members, DELETE /chat/4.",
+            "Examples: GET /v1/chat, POST /v1/chat, POST /v1/chat/4/messages, PUT /v1/chat/4/admins/7, DELETE /v1/chat/4.",
     },
     {
-        prefix: "game",
+        prefix: "v1/game",
         tag: "Game",
         summary: "Forward to the game service.",
         description:
-            "Client path /game/<path> is proxied to GAME_SERVICE_URL. " +
+            "Client path /v1/game/<path> is proxied to GAME_SERVICE_URL. " +
             "Request and response shapes are documented by that service at its /swagger. " +
-            "Examples: POST /game, GET /game/userGames/7, POST /game/{roomId}/move.",
+            "Examples: GET /v1/game, GET /v1/game/invitations, PATCH /v1/game/{roomId}, POST /v1/game/{roomId}/moves.",
     },
 ];
 

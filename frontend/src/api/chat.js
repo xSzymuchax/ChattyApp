@@ -30,8 +30,8 @@ export const createGroupChat = (memberIds, name) => {
     });
 }
 
-export const getUserChats = (userID) => {
-    return chatApi.get(`/chat/userChats/${userID}`);
+export const getUserChats = () => {
+    return chatApi.get('/chat');
 }
 
 export const getChat = (chatId) => {
@@ -47,13 +47,15 @@ export const removeChatMember = (chatId, userId) => {
 }
 
 export const grantChatAdmin = (chatId, userId) => {
-    return chatApi.post(`/chat/${chatId}/members/${userId}/admin`);
+    return chatApi.put(`/chat/${chatId}/admins/${userId}`);
 }
 
 export const getMessagesFromChat = (chatId, start, end) => {
-    return chatApi.post(`/chat/${chatId}/messages`, {
-        start: start,
-        end: end
+    return chatApi.get(`/chat/${chatId}/messages`, {
+        params: {
+            start,
+            end,
+        },
     });
 }
 

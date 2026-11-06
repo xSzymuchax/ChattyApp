@@ -402,9 +402,11 @@ describe("ChatService", () => {
             expect(mockRepository.getMessagesByRange).not.toHaveBeenCalled();
         });
 
-        it("forbids reading another user's chat list", async () => {
-            await expect(chatService.getUserChats(5, 2)).resolves.toEqual({ error: "forbidden" });
-            expect(mockRepository.getUserChats).not.toHaveBeenCalled();
+        it("returns the requester's chats", async () => {
+            mockRepository.getUserChats.mockResolvedValue([]);
+
+            await expect(chatService.getUserChats(5)).resolves.toEqual([]);
+            expect(mockRepository.getUserChats).toHaveBeenCalledWith(5);
         });
 
         it("returns null for a missing chat and forbidden for an outsider", async () => {
