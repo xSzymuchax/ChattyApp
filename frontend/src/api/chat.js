@@ -5,20 +5,28 @@ export const findChatBetweenUsers = (chats, firstUserId, secondUserId) => {
     const secondId = Number(secondUserId);
 
     return (chats ?? []).find((chat) => {
-        const chatFirstId = Number(chat.firstUserId);
-        const chatSecondId = Number(chat.secondUserId);
+        if (chat?.name) {
+            return false;
+        }
 
-        return (
-            (chatFirstId === firstId && chatSecondId === secondId) ||
-            (chatFirstId === secondId && chatSecondId === firstId)
-        );
+        const memberIds = (chat?.memberIds ?? []).map(Number);
+
+        return memberIds.length === 2
+            && memberIds.includes(firstId)
+            && memberIds.includes(secondId);
     });
 };
 
 export const createChat = (firstUserId, secondUserId) => {
     return chatApi.post('/chat', {
-        firstUserId: firstUserId,
-        secondUserId: secondUserId
+        memberIds: [firstUserId, secondUserId]
+    });
+}
+
+export const createGroupChat = (memberIds, name) => {
+    return chatApi.post('/chat', {
+        memberIds,
+        name,
     });
 }
 
@@ -28,6 +36,18 @@ export const getUserChats = (userID) => {
 
 export const getChat = (chatId) => {
     return chatApi.get(`/chat/${chatId}`);
+}
+
+export const addChatMember = (chatId, userId) => {
+    return chatApi.post(`/chat/${chatId}/members`, { userId });
+}
+
+export const removeChatMember = (chatId, userId) => {
+    return chatApi.delete(`/chat/${chatId}/members/${userId}`);
+}
+
+export const grantChatAdmin = (chatId, userId) => {
+    return chatApi.post(`/chat/${chatId}/members/${userId}/admin`);
 }
 
 export const getMessagesFromChat = (chatId, start, end) => {

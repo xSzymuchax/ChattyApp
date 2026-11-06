@@ -5,21 +5,38 @@ const { processAttachment } = require("../../util/attachment");
 const { saveAttachment, readAttachment } = require("../../util/fileStore");
 const chatRepository = createChatRepository(Chat, Message);
 
-const normalizeUserIds = (firstUserId, secondUserId) => {
-    const lowerId = Math.min(firstUserId, secondUserId);
-    const higherId = Math.max(firstUserId, secondUserId);
+const MAX_MEMBERS = 50;
+const MAX_NAME_LENGTH = 80;
+
+const asIdList = (value) =>
+    (Array.isArray(value) ? value : [])
+        .map(Number)
+        .filter((id) => Number.isInteger(id) && id > 0);
+
+const uniqueSorted = (ids) => [...new Set(asIdList(ids))].sort((left, right) => left - right);
+
+const includesId = (ids, userId) =>
+    uniqueSorted(ids).includes(Number(userId));
+
+const isParticipant = (chat, userId) => includesId(chat?.memberIds, userId);
+
+const isAdmin = (chat, userId) => includesId(chat?.adminIds, userId);
+
+const otherMemberIds = (chat, userId) =>
+    uniqueSorted(chat?.memberIds).filter((id) => id !== Number(userId));
+
+const toPublicChat = (chat) => {
+    const json = typeof chat?.toJSON === "function" ? chat.toJSON() : chat;
+
+    if (!json) return null;
 
     return {
-        firstUserId: lowerId,
-        secondUserId: higherId,
+        id: json.id,
+        name: json.name ?? null,
+        createdBy: Number(json.createdBy),
+        memberIds: uniqueSorted(json.memberIds),
+        adminIds: uniqueSorted(json.adminIds),
     };
-};
-
-const isParticipant = (chat, senderId) => {
-    return (
-        Number(chat.firstUserId) === Number(senderId) ||
-        Number(chat.secondUserId) === Number(senderId)
-    );
 };
 
 const realtimeGatewayUrl = () => {
@@ -32,16 +49,6 @@ const realtimeGatewayUrl = () => {
     return "http://localhost:3300";
 };
 
-const toPublicChat = (chat) => {
-    const json = typeof chat?.toJSON === "function" ? chat.toJSON() : chat;
-
-    return {
-        id: json.id,
-        firstUserId: json.firstUserId,
-        secondUserId: json.secondUserId,
-    };
-};
-
 const notifyRealtime = (userId, type, message) => {
     const url = realtimeGatewayUrl();
 
@@ -51,7 +58,10 @@ const notifyRealtime = (userId, type, message) => {
 
     fetch(`${url}/notify`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            "X-Internal-Token": process.env.INTERNAL_SERVICE_TOKEN || "",
+        },
         body: JSON.stringify({
             userId,
             type,
@@ -60,43 +70,50 @@ const notifyRealtime = (userId, type, message) => {
     }).catch(() => {});
 };
 
-const notifyChatCreated = (userId, chat) => {
-    notifyRealtime(userId, "chatCreated", chat);
+const notifyEach = (userIds, type, message) => {
+    for (const userId of userIds) {
+        notifyRealtime(userId, type, message);
+    }
 };
 
-const notifyRecipient = (userId, message) => {
-    notifyRealtime(userId, "message", message);
+const normalizeName = (name) => {
+    if (name === undefined || name === null) return null;
+    if (typeof name !== "string") return undefined;
+
+    const trimmed = name.trim();
+    return trimmed.length ? trimmed : null;
 };
 
 const chatService = {
     async createChat(data, requesterId) {
-        if (
-            Number(requesterId) !== Number(data.firstUserId) &&
-            Number(requesterId) !== Number(data.secondUserId)
-        ) {
-            return { error: "forbidden" };
+        const memberIds = uniqueSorted(data.memberIds);
+        const name = normalizeName(data.name);
+        const creatorId = Number(requesterId);
+
+        if (name === undefined) return { error: "bad_request" };
+
+        if (!memberIds.includes(creatorId)) return { error: "forbidden" };
+
+        if (!name) {
+            if (memberIds.length !== 2) return { error: "bad_request" };
+
+            const existingChat = await chatRepository.getDirectChatByMemberIds(memberIds);
+
+            if (existingChat) return null;
+        } else if (name.length > MAX_NAME_LENGTH || memberIds.length < 3 || memberIds.length > MAX_MEMBERS) {
+            return { error: "bad_request" };
         }
 
-        const { firstUserId, secondUserId } = normalizeUserIds(
-            data.firstUserId,
-            data.secondUserId
-        );
-
-        const existingChat = await chatRepository.getChatByUserIds(
-            firstUserId,
-            secondUserId
-        );
-
-        if (existingChat) return null;
-
-        const created = await chatRepository.createChat({ firstUserId, secondUserId });
+        const created = await chatRepository.createChat({
+            memberIds,
+            adminIds: [creatorId],
+            name,
+            createdBy: creatorId,
+            active: true,
+        });
         const chat = toPublicChat(created);
-        const otherUserId =
-            Number(requesterId) === Number(chat.firstUserId)
-                ? chat.secondUserId
-                : chat.firstUserId;
 
-        notifyChatCreated(otherUserId, chat);
+        notifyEach(otherMemberIds(chat, creatorId), "chatCreated", chat);
         return chat;
     },
 
@@ -113,12 +130,10 @@ const chatService = {
             content: data.content,
         });
 
-        const recipientId =
-            Number(chat.firstUserId) === Number(data.senderId)
-                ? Number(chat.secondUserId)
-                : Number(chat.firstUserId);
-
-        return { message: serializeMessage(message), recipientId };
+        return {
+            message: serializeMessage(message),
+            recipientIds: otherMemberIds(chat, data.senderId),
+        };
     },
 
     async createAttachment(chatId, { senderId, file }) {
@@ -143,15 +158,14 @@ const chatService = {
 
         await saveAttachment(message.id, processed.buffer);
 
-        const recipientId =
-            Number(chat.firstUserId) === Number(senderId)
-                ? Number(chat.secondUserId)
-                : Number(chat.firstUserId);
-
         const serialized = serializeMessage(message);
-        notifyRecipient(recipientId, serialized);
+        const recipientIds = otherMemberIds(chat, senderId);
 
-        return { message: serialized, recipientId };
+        for (const recipientId of recipientIds) {
+            notifyRealtime(recipientId, "message", serialized);
+        }
+
+        return { message: serialized, recipientIds };
     },
 
     async getAttachment(chatId, messageId, userId) {
@@ -207,6 +221,100 @@ const chatService = {
         if (!isParticipant(chat, requesterId)) return { error: "forbidden" };
 
         return toPublicChat(chat);
+    },
+
+    async addMember(chatId, requesterId, userId) {
+        const chat = await chatRepository.getChatById(chatId);
+
+        if (!chat) return { error: "not_found" };
+
+        if (!chat.name) return { error: "bad_request" };
+
+        if (!isParticipant(chat, requesterId)) return { error: "forbidden" };
+
+        const nextUserId = Number(userId);
+
+        if (isParticipant(chat, nextUserId)) return { error: "conflict" };
+
+        if (chat.memberIds.length >= MAX_MEMBERS) return { error: "bad_request" };
+
+        const updated = await chatRepository.updateChat(chatId, {
+            memberIds: uniqueSorted([...chat.memberIds, nextUserId]),
+        });
+
+        notifyRealtime(nextUserId, "chatCreated", updated);
+        notifyEach(chat.memberIds, "chatUpdated", updated);
+        return updated;
+    },
+
+    async removeMember(chatId, requesterId, userId) {
+        const chat = await chatRepository.getChatById(chatId);
+
+        if (!chat) return { error: "not_found" };
+
+        if (!chat.name) return { error: "bad_request" };
+
+        if (!isParticipant(chat, requesterId)) return { error: "forbidden" };
+
+        const targetId = Number(userId);
+
+        if (!isParticipant(chat, targetId)) return { error: "not_member" };
+
+        if (targetId !== Number(requesterId) && !isAdmin(chat, requesterId)) {
+            return { error: "forbidden" };
+        }
+
+        const memberIds = chat.memberIds.filter((id) => id !== targetId);
+        const adminIds = chat.adminIds.filter((id) => id !== targetId);
+
+        if (memberIds.length === 0) {
+            await chatRepository.updateChat(chatId, { memberIds, adminIds, active: false });
+            notifyRealtime(targetId, "chatRemoved", { id: chat.id });
+            return { id: chat.id };
+        }
+
+        const updated = await chatRepository.updateChat(chatId, { memberIds, adminIds });
+
+        notifyRealtime(targetId, "chatRemoved", { id: chat.id });
+        notifyEach(memberIds, "chatUpdated", updated);
+        return updated;
+    },
+
+    async grantAdmin(chatId, requesterId, userId) {
+        const chat = await chatRepository.getChatById(chatId);
+
+        if (!chat) return { error: "not_found" };
+
+        if (!chat.name) return { error: "bad_request" };
+
+        if (!isAdmin(chat, requesterId)) return { error: "forbidden" };
+
+        const targetId = Number(userId);
+
+        if (!isParticipant(chat, targetId)) return { error: "not_member" };
+
+        if (isAdmin(chat, targetId)) return chat;
+
+        const updated = await chatRepository.updateChat(chatId, {
+            adminIds: uniqueSorted([...chat.adminIds, targetId]),
+        });
+
+        notifyEach(updated.memberIds, "chatUpdated", updated);
+        return updated;
+    },
+
+    async deleteChat(chatId, requesterId) {
+        const chat = await chatRepository.getChatById(chatId);
+
+        if (!chat) return { error: "not_found" };
+
+        if (!chat.name) return { error: "bad_request" };
+
+        if (!isAdmin(chat, requesterId)) return { error: "forbidden" };
+
+        await chatRepository.deactivateChat(chat.id);
+        notifyEach(chat.memberIds, "chatDeleted", { id: chat.id });
+        return { id: chat.id };
     },
 };
 

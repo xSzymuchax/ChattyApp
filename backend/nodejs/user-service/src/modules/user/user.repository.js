@@ -19,7 +19,6 @@ const serializeUser = (user, hasAvatarOverride) => {
         id: json.id,
         username: json.username,
         description: json.description ?? null,
-        email: json.email,
         hasAvatar: raw === true || raw === "true" || raw === "t" || raw === 1,
         updatedAt,
     };

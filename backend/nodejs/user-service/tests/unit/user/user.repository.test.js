@@ -138,7 +138,8 @@ describe("user repository", () => {
         await repository.createUser({ username: "ada", email: "ada@example.com" });
 
         const found = await repository.checkUserExist("ada@example.com");
-        expect(found.email).toBe("ada@example.com");
+        expect(found.username).toBe("ada");
+        expect(found.email).toBeUndefined();
 
         await repository.deleteUser(1);
         await expect(repository.checkUserExist("ada@example.com")).resolves.toBe(false);

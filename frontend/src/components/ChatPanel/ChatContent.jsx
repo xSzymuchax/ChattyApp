@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import './ChatContent.css'
-import ChatMessage from './ChatMessage'
+import ChatMessageGroup, { groupMessagesBySender } from './ChatMessage'
 import LinkWarningModal from './LinkWarningModal';
 import DownloadConfirmModal from './DownloadConfirmModal';
 import ImagePreviewModal from './ImagePreviewModal';
@@ -10,6 +10,7 @@ import { getChatAttachment } from '../../api/chat';
 function ChatContent({
     chatId,
     chatMessages = [],
+    senderProfiles = {},
     hasMore = false,
     isLoadingOlder = false,
     scrollToBottomToken = 0,
@@ -185,17 +186,18 @@ function ChatContent({
     return(
         <div className='chat-content' ref={contentRef} onScroll={handleScroll}>
             <div className='chat-content-spacer' aria-hidden="true"></div>
-            {chatMessages.map((x) => (
-                <ChatMessage 
-                    key={x.id}
+            {groupMessagesBySender(chatMessages).map((group) => (
+                <ChatMessageGroup
+                    key={group.messages[0].id}
                     chatId={chatId}
-                    message={x}
+                    messages={group.messages}
+                    sender={senderProfiles[group.senderId]}
                     onLinkClick={handleLinkClick}
                     onOpenInvitations={onOpenInvitations}
                     onDownloadRequest={handleDownloadRequest}
-                    onImageClick={(src, alt) => setPreviewImage({ src, alt })}>
-                </ChatMessage>)
-            )}
+                    onImageClick={(src, alt) => setPreviewImage({ src, alt })}
+                />
+            ))}
             <LinkWarningModal
                 url={pendingLink}
                 onConfirm={handleConfirmLink}

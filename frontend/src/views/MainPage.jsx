@@ -46,6 +46,7 @@ function MainPage() {
                         onOpenInvitations={openInvitations}
                         onOpponentChange={setOpponent}
                         onChatActivity={handleChatActivity}
+                        onChatClosed={() => setSelectedChatId(null)}
                         sentChatMessage={sentChatMessage}
                     />
                 }

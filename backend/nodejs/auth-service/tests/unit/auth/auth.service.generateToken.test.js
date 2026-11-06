@@ -16,6 +16,7 @@ jest.mock(
 describe("AuthService", () => {
     beforeAll(() => {
         process.env.JWT_SECRET = "test-secret";
+        process.env.INTERNAL_SERVICE_TOKEN = "internal-test-token";
     });
 
     beforeEach(() => {
@@ -52,6 +53,7 @@ describe("AuthService", () => {
                 method: "post",
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-Internal-Token': 'internal-test-token',
                 },
                 body: JSON.stringify({
                     email: email,

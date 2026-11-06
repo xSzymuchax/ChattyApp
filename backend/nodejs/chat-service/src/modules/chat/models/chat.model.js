@@ -9,24 +9,31 @@ const Chat = (sequelize) => {
                 primaryKey: true,
                 autoIncrement: true,
             },
-            firstUserId: {
+            memberIds: {
+                type: DataTypes.ARRAY(DataTypes.INTEGER),
+                allowNull: false,
+            },
+            adminIds: {
+                type: DataTypes.ARRAY(DataTypes.INTEGER),
+                allowNull: false,
+            },
+            name: {
+                type: DataTypes.STRING(80),
+                allowNull: true,
+            },
+            createdBy: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
             },
-            secondUserId: {
-                type: DataTypes.INTEGER,
+            active: {
+                type: DataTypes.BOOLEAN,
                 allowNull: false,
+                defaultValue: true,
             },
         },
         {
             tableName: "chats",
             timestamps: true,
-            indexes: [
-                {
-                    unique: true,
-                    fields: ["firstUserId", "secondUserId"],
-                },
-            ],
         }
     );
 };

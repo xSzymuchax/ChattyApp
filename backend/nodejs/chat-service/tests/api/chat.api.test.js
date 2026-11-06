@@ -89,7 +89,13 @@ describe("Chat API", () => {
         });
 
         it("returns the chat for a participant", async () => {
-            const chat = { id: 4, firstUserId: 7, secondUserId: 9 };
+            const chat = {
+                id: 4,
+                name: null,
+                createdBy: 7,
+                memberIds: [7, 9],
+                adminIds: [7],
+            };
             chatService.getChatById.mockResolvedValue(chat);
 
             const response = await authed(request(app).get("/4"));
@@ -205,35 +211,35 @@ describe("Chat API", () => {
 
     describe("POST /", () => {
         it("creates a chat between two users", async () => {
-            const chat = { id: 4, firstUserId: 3, secondUserId: 8 };
+            const chat = {
+                id: 4,
+                name: null,
+                createdBy: 7,
+                memberIds: [3, 8],
+                adminIds: [7],
+            };
             chatService.createChat.mockResolvedValue(chat);
 
             const response = await authed(request(app).post("/")).send({
-                firstUserId: 3,
-                secondUserId: 8,
+                memberIds: [3, 8],
             });
 
             expect(response.status).toBe(200);
             expect(response.body).toEqual(chat);
             expect(chatService.createChat).toHaveBeenCalledWith(
-                { firstUserId: 3, secondUserId: 8 },
+                { memberIds: [3, 8], name: undefined },
                 7
             );
         });
 
         it.each([
-            [{}, "both ids are missing"],
-            [{ firstUserId: 1 }, "the second id is missing"],
-            [{ secondUserId: 2 }, "the first id is missing"],
-            [{ firstUserId: "3", secondUserId: 8 }, "an id is a string"],
-            [{ firstUserId: 1.5, secondUserId: 2 }, "an id is fractional"],
-            [{ firstUserId: "abc", secondUserId: 2 }, "an id is not numeric"],
+            [{}, "member ids are missing"],
+            [{ memberIds: ["3", 8] }, "an id is a string"],
+            [{ memberIds: [1.5, 2] }, "an id is fractional"],
+            [{ memberIds: ["abc", 2] }, "an id is not numeric"],
+            [{ memberIds: [1, 2], name: 4 }, "the name is not text"],
         ])("returns 400 when %j (%s)", async (body) => {
-            chatService.createChat.mockResolvedValue({
-                id: 4,
-                firstUserId: 3,
-                secondUserId: 8,
-            });
+            chatService.createChat.mockResolvedValue({ id: 4 });
 
             const response = await authed(request(app).post("/")).send(body);
 
@@ -246,7 +252,7 @@ describe("Chat API", () => {
             const response = await authed(
                 request(app).post("/"),
                 { userId: 7.5, username: "ada" }
-            ).send({ firstUserId: 1, secondUserId: 2 });
+            ).send({ memberIds: [1, 2] });
 
             expect(response.status).toBe(400);
             expect(chatService.createChat).not.toHaveBeenCalled();
@@ -256,8 +262,7 @@ describe("Chat API", () => {
             chatService.createChat.mockResolvedValue({ error: "forbidden" });
 
             const response = await authed(request(app).post("/")).send({
-                firstUserId: 1,
-                secondUserId: 2,
+                memberIds: [1, 2],
             });
 
             expect(response.status).toBe(403);
@@ -268,8 +273,7 @@ describe("Chat API", () => {
             chatService.createChat.mockResolvedValue(null);
 
             const response = await authed(request(app).post("/")).send({
-                firstUserId: 7,
-                secondUserId: 9,
+                memberIds: [7, 9],
             });
 
             expect(response.status).toBe(409);
@@ -291,8 +295,7 @@ describe("Chat API", () => {
             chatService.createChat.mockRejectedValue(new Error("insert leaked"));
 
             const response = await authed(request(app).post("/")).send({
-                firstUserId: 7,
-                secondUserId: 9,
+                memberIds: [7, 9],
             });
 
             expect(response.status).toBe(500);
@@ -311,7 +314,7 @@ describe("Chat API", () => {
                     content: "hi",
                     attachment: null,
                 },
-                recipientId: 9,
+                recipientIds: [9],
             });
 
             const response = await authed(request(app).post("/4/message")).send({
@@ -329,7 +332,7 @@ describe("Chat API", () => {
         it("creates a message as the signed-in user", async () => {
             chatService.createMessage.mockResolvedValue({
                 message: { id: 11, content: "hi" },
-                recipientId: 9,
+                recipientIds: [9],
             });
 
             const response = await authed(request(app).post("/4/message")).send({
@@ -340,7 +343,7 @@ describe("Chat API", () => {
             expect(response.status).toBe(200);
             expect(response.body).toEqual({
                 message: { id: 11, content: "hi" },
-                recipientId: 9,
+                recipientIds: [9],
             });
             expect(chatService.createMessage).toHaveBeenCalledWith(4, {
                 senderId: 7,
@@ -351,7 +354,7 @@ describe("Chat API", () => {
         it("forwards whitespace-only content", async () => {
             chatService.createMessage.mockResolvedValue({
                 message: { id: 1, content: " " },
-                recipientId: 9,
+                recipientIds: [9],
             });
 
             const response = await authed(request(app).post("/4/message")).send({
@@ -530,7 +533,7 @@ describe("Chat API", () => {
         it("stores an attachment as the signed-in user", async () => {
             chatService.createAttachment.mockResolvedValue({
                 message: { id: 12, kind: "file" },
-                recipientId: 9,
+                recipientIds: [9],
             });
 
             const response = await upload(authed(request(app).post("/4/attachment")));
@@ -538,7 +541,7 @@ describe("Chat API", () => {
             expect(response.status).toBe(200);
             expect(response.body).toEqual({
                 message: { id: 12, kind: "file" },
-                recipientId: 9,
+                recipientIds: [9],
             });
             expect(chatService.createAttachment).toHaveBeenCalledWith(4, {
                 senderId: 7,

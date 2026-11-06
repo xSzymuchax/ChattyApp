@@ -5,6 +5,7 @@ const swaggerUI = require('swagger-ui-express');
 
 const createWebSocketServer = require('./websocket/webSocketServer');
 const { sendToUser } = require('./websocket/connectionManager');
+const checkInternal = require('./middleware/internalAuth');
 const swaggerDoc = require('./config/swagger');
 
 const app = express();
@@ -22,7 +23,7 @@ app.get('/health', (req, res) => {
     });
 });
 
-app.post('/notify', (req, res) => {
+app.post('/notify', checkInternal, (req, res) => {
     const { userId, type, message } = req.body;
     sendToUser(userId, message, type);
     res.status(204).end();

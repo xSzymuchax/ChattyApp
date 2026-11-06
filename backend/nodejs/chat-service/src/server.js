@@ -4,7 +4,6 @@ const PORT = process.env.PORT || 3000;
 
 const sequelize = require("./config/database");
 
-
 async function startServer() {
     try{
         await sequelize.sync({ alter: true });

@@ -33,7 +33,7 @@ const mounts = [
             "Client path /chat/<path> is proxied to CHAT_SERVICE_URL. " +
             "The proxy waits up to 180 seconds, which covers attachment uploads. " +
             "Request and response shapes are documented by that service at its /swagger. " +
-            "Examples: POST /chat, POST /chat/4/message, GET /chat/4/messages/8/attachment.",
+            "Examples: POST /chat, POST /chat/4/message, POST /chat/4/members, DELETE /chat/4.",
     },
     {
         prefix: "game",

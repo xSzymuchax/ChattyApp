@@ -9,16 +9,16 @@ router.use(checkAuth);
 
 router.get("/userChats/:id", controller.getUserChats);
 router.get("/:id/messages/:messageId/attachment", controller.getAttachment);
+router.post("/:id/members/:userId/admin", controller.grantAdmin);
+router.post("/:id/members", controller.addMember);
+router.delete("/:id/members/:userId", controller.removeMember);
+router.delete("/:id", controller.deleteChat);
 router.get("/:id", controller.getChat);
 
 router.post("/", controller.createChat);
 router.post("/:id/message", controller.createMessage);
 router.post("/:id/messages", controller.getMessages);
-router.post(
-    "/:id/attachment",
-    handleAttachmentUpload,
-    controller.createAttachment
-);
+router.post("/:id/attachment", handleAttachmentUpload, controller.createAttachment);
 
 
 module.exports = router;
