@@ -12,6 +12,18 @@ const parseBodyInt = (value, minimum) => {
     return value;
 };
 
+const parseQueryInt = (value, minimum) => {
+    if (typeof value !== "string" || !/^\d+$/.test(value))
+        return null;
+
+    const parsed = Number(value);
+
+    if (!Number.isInteger(parsed) || parsed < minimum)
+        return null;
+
+    return parsed;
+};
+
 const parseMemberIds = (value) => {
     if (!Array.isArray(value) || value.length === 0)
         return null;
@@ -192,8 +204,8 @@ const getMessages = async (req, res) => {
     try {
         const chatId = parsePositiveInt(req.params.id);
         const requesterId = parsePositiveInt(req.user?.userId);
-        const start = parseBodyInt(req.body.start, 0);
-        const end = parseBodyInt(req.body.end, 0);
+        const start = parseQueryInt(req.query.start, 0);
+        const end = parseQueryInt(req.query.end, 0);
 
         if (!chatId || !requesterId || start === null || end === null || start > end)
             return res.status(400).json({message: "Bad request."});
@@ -215,16 +227,12 @@ const getMessages = async (req, res) => {
 
 const getUserChats = async (req,res) => {
     try {
-        const userId = parsePositiveInt(req.params.id);
         const requesterId = parsePositiveInt(req.user?.userId);
 
-        if (!userId || !requesterId)
+        if (!requesterId)
             return res.status(400).json({message: "Bad request."});
 
-        const result = await chatService.getUserChats(userId, requesterId);
-
-        if (result?.error === "forbidden")
-            return res.status(403).json({message: "Access denied."});
+        const result = await chatService.getUserChats(requesterId);
 
         res.status(200).json(result);
     } catch (error) {

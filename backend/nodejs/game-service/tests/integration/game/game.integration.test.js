@@ -15,7 +15,7 @@ describe("game integration", () => {
 
     afterEach(async () => {
         for (const id of createdIds) {
-            await asUser(11, request(app).post(`/${id}/leave`)).send({ userId: 11 });
+            await asUser(11, request(app).delete(`/${id}`));
         }
         createdIds.length = 0;
     });
@@ -32,19 +32,18 @@ describe("game integration", () => {
         expect(created.body.status).toBe("pending");
         expect(created.body.gameName).toBe("Checkers");
 
-        const invitations = await asUser(12, request(app).get("/invitations/12"));
+        const invitations = await asUser(12, request(app).get("/invitations"));
         expect(invitations.status).toBe(200);
         expect(invitations.body.map((room) => room.id)).toEqual([created.body.id]);
 
-        const accepted = await asUser(12, request(app).post(`/${created.body.id}/accept`))
-            .send({ userId: 12 });
+        const accepted = await asUser(12, request(app).patch(`/${created.body.id}`))
+            .send({ status: "active" });
         expect(accepted.status).toBe(200);
         expect(accepted.body.status).toBe("active");
 
         const move = created.body.gameState.legalMoves[0];
-        const played = await asUser(11, request(app).post(`/${created.body.id}/move`))
+        const played = await asUser(11, request(app).post(`/${created.body.id}/moves`))
             .send({
-                userId: 11,
                 move: { from: move.from, to: move.to },
             });
 
@@ -73,11 +72,10 @@ describe("game integration", () => {
         expect(busy.status).toBe(409);
         expect(busy.body).toEqual({ message: "User is already in a game." });
 
-        await asUser(12, request(app).post(`/${created.body.id}/accept`)).send({ userId: 12 });
+        await asUser(12, request(app).patch(`/${created.body.id}`)).send({ status: "active" });
 
-        const illegal = await asUser(11, request(app).post(`/${created.body.id}/move`))
+        const illegal = await asUser(11, request(app).post(`/${created.body.id}/moves`))
             .send({
-                userId: 11,
                 move: { marbles: [{ q: 0, r: 0 }], dq: 1, dr: 0 },
             });
 

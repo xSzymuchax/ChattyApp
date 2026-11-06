@@ -120,7 +120,7 @@ describe("chat integration", () => {
         expect(outsider.status).toBe(403);
 
         const sent = await request(app)
-            .post("/1/message")
+            .post("/1/messages")
             .set(auth(2))
             .send({ content: "hello" });
 
@@ -129,15 +129,15 @@ describe("chat integration", () => {
         expect(sent.body.message.content).toBe("hello");
 
         const denied = await request(app)
-            .post("/1/message")
+            .post("/1/messages")
             .set(auth(9))
             .send({ content: "nope" });
         expect(denied.status).toBe(403);
 
         const page = await request(app)
-            .post("/1/messages")
+            .get("/1/messages")
             .set(auth(5))
-            .send({ start: 0, end: 10 });
+            .query({ start: 0, end: 10 });
 
         expect(page.status).toBe(200);
         expect(page.body.map((message) => message.content)).toEqual(["hello"]);

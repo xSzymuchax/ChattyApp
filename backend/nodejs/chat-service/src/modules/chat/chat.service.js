@@ -205,12 +205,8 @@ const chatService = {
         return messages.map(serializeMessage);
     },
 
-    async getUserChats(userId, requesterId) {
-        if (Number(userId) !== Number(requesterId)) {
-            return { error: "forbidden" };
-        }
-
-        return chatRepository.getUserChats(userId);
+    async getUserChats(requesterId) {
+        return chatRepository.getUserChats(requesterId);
     },
 
     async getChatById(id, requesterId) {

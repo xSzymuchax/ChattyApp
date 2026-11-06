@@ -74,13 +74,10 @@ const getGameRoom = (req, res) => {
 
 const getUserGames = (req, res) => {
     try {
-        const userId = parsePositiveInt(req.params.id);
+        const userId = requesterId(req);
 
         if (!userId)
             return res.status(400).json({ message: "Bad request." });
-
-        if (!ownsRequest(req, userId))
-            return res.status(403).json({ message: "Access denied." });
 
         res.status(200).json(gameService.getUserGames(userId));
     } catch (error) {
@@ -91,13 +88,10 @@ const getUserGames = (req, res) => {
 
 const getInvitations = (req, res) => {
     try {
-        const userId = parsePositiveInt(req.params.id);
+        const userId = requesterId(req);
 
         if (!userId)
             return res.status(400).json({ message: "Bad request." });
-
-        if (!ownsRequest(req, userId))
-            return res.status(403).json({ message: "Access denied." });
 
         res.status(200).json(gameService.getInvitations(userId));
     } catch (error) {
@@ -109,13 +103,10 @@ const getInvitations = (req, res) => {
 const acceptInvitation = (req, res) => {
     try {
         const id = parseRoomId(req.params.id);
-        const userId = parseBodyUserId(req.body.userId);
+        const userId = requesterId(req);
 
-        if (!id || !userId)
+        if (!id || !userId || req.body?.status !== "active")
             return res.status(400).json({ message: "Bad request." });
-
-        if (!ownsRequest(req, userId))
-            return res.status(403).json({ message: "Access denied." });
 
         const result = gameService.acceptInvitation(id, userId);
 
@@ -135,13 +126,10 @@ const acceptInvitation = (req, res) => {
 const leaveGame = (req, res) => {
     try {
         const id = parseRoomId(req.params.id);
-        const userId = parseBodyUserId(req.body.userId);
+        const userId = requesterId(req);
 
         if (!id || !userId)
             return res.status(400).json({ message: "Bad request." });
-
-        if (!ownsRequest(req, userId))
-            return res.status(403).json({ message: "Access denied." });
 
         const result = gameService.leaveGame(id, userId);
 
@@ -161,14 +149,11 @@ const leaveGame = (req, res) => {
 const makeMove = (req, res) => {
     try {
         const id = parseRoomId(req.params.id);
-        const userId = parseBodyUserId(req.body.userId);
+        const userId = requesterId(req);
         const { move } = req.body;
 
         if (!id || !userId || move === undefined)
             return res.status(400).json({ message: "Bad request." });
-
-        if (!ownsRequest(req, userId))
-            return res.status(403).json({ message: "Access denied." });
 
         const result = gameService.makeMove(id, { userId, move });
 

@@ -17,7 +17,7 @@
 		reverse_proxy api-gateway:3000
 	}
 
-	handle /ws {
+	handle /ws/v1 {
 		reverse_proxy realtime-gateway:3300
 	}
 

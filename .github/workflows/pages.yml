@@ -36,8 +36,8 @@ jobs:
         working-directory: frontend
         env:
           GITHUB_PAGES: "true"
-          VITE_API_URL: https://chatty-api-mldy.onrender.com
-          VITE_RT_API_URL: wss://chatty-api-mldy.onrender.com/ws
+          VITE_API_URL: https://chatty-api-mldy.onrender.com/v1
+          VITE_RT_API_URL: wss://chatty-api-mldy.onrender.com/ws/v1
           VITE_TOKEN_KEY: chatty.authToken
         run: npm run build
 
