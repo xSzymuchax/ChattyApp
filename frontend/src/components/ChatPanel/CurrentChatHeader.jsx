@@ -1,7 +1,7 @@
 import './CurrentChatHeader.css'
 import UserAvatar from '../UserAvatar'
 
-function CurrentChatHeader({chatName, userId, version, hasAvatar}) {
+function CurrentChatHeader({chatName, userId, version, hasAvatar, onOpenSettings}) {
     return (
         <div className='current-chat-header'>
             <div className='chat-image'>
@@ -13,6 +13,16 @@ function CurrentChatHeader({chatName, userId, version, hasAvatar}) {
                 />
             </div>
             <div className='chat-name'>{chatName ?? ''}</div>
+            {onOpenSettings && (
+                <button
+                    type="button"
+                    className="chat-settings-button"
+                    aria-label="Chat settings"
+                    onClick={onOpenSettings}
+                >
+                    <i className="icon-cogs"></i>
+                </button>
+            )}
         </div>
     )
 }

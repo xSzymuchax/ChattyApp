@@ -28,7 +28,11 @@ const createChatRepository = (Chat, Message) => ({
     },
 
     async getChatById(id) {
-        return toPublicChat(await Chat.findByPk(id));
+        const chat = await Chat.findByPk(id);
+
+        if (!chat || chat.active === false) return null;
+
+        return toPublicChat(chat);
     },
 
     async getDirectChatByMemberIds(memberIds) {
@@ -36,6 +40,7 @@ const createChatRepository = (Chat, Message) => ({
             where: {
                 name: { [Op.is]: null },
                 memberIds,
+                active: true,
             },
         });
     },
@@ -61,9 +66,13 @@ const createChatRepository = (Chat, Message) => ({
         return messages.map((message) => message.id);
     },
 
-    async deleteChat(id) {
-        await Message.destroy({ where: { chatId: id } });
-        await Chat.destroy({ where: { id } });
+    async deactivateChat(id) {
+        const chat = await Chat.findByPk(id);
+
+        if (!chat) return null;
+
+        await chat.update({ active: false });
+        return toPublicChat(chat);
     },
 
     async createMessage(data) {
@@ -91,6 +100,7 @@ const createChatRepository = (Chat, Message) => ({
         const chats = await Chat.findAll({
             where: {
                 memberIds: { [Op.contains]: [Number(userId)] },
+                active: true,
             },
         });
 

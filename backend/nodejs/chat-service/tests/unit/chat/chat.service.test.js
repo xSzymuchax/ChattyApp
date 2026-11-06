@@ -8,7 +8,7 @@ jest.mock("../../../src/modules/chat/chat.repository", () => {
         getDirectChatByMemberIds: jest.fn(),
         updateChat: jest.fn(),
         getAttachmentMessageIds: jest.fn(),
-        deleteChat: jest.fn(),
+        deactivateChat: jest.fn(),
         createMessage: jest.fn(),
         getMessageById: jest.fn(),
         getMessagesByRange: jest.fn(),
@@ -127,6 +127,7 @@ describe("ChatService", () => {
                 adminIds: [5],
                 name: null,
                 createdBy: 5,
+                active: true,
             });
             expect(fetch).toHaveBeenCalledWith("http://realtime.test/notify", expect.objectContaining({
                 method: "POST",
@@ -160,6 +161,7 @@ describe("ChatService", () => {
                 adminIds: [2],
                 name: "Team",
                 createdBy: 2,
+                active: true,
             });
             expect(fetch).toHaveBeenCalledTimes(2);
             expect(result.name).toBe("Team");
@@ -380,14 +382,13 @@ describe("ChatService", () => {
             expect(kicked.memberIds).toEqual([2, 5]);
 
             mockRepository.getChatById.mockResolvedValue(groupChat({ adminIds: [2, 5] }));
-            mockRepository.getAttachmentMessageIds.mockResolvedValue([15]);
             await expect(chatService.deleteChat(4, 9)).resolves.toEqual({ error: "forbidden" });
 
             const deleted = await chatService.deleteChat(4, 5);
 
             expect(deleted).toEqual({ id: 4 });
-            expect(mockFileStore.deleteAttachment).toHaveBeenCalledWith(15);
-            expect(mockRepository.deleteChat).toHaveBeenCalledWith(4);
+            expect(mockRepository.deactivateChat).toHaveBeenCalledWith(4);
+            expect(mockFileStore.deleteAttachment).not.toHaveBeenCalled();
         });
     });
 

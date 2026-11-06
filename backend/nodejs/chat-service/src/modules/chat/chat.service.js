@@ -2,7 +2,7 @@ const { Chat, Message } = require("../../models");
 const createChatRepository = require("./chat.repository");
 const { serializeMessage } = require("../../util/messageView");
 const { processAttachment } = require("../../util/attachment");
-const { saveAttachment, readAttachment, deleteAttachment } = require("../../util/fileStore");
+const { saveAttachment, readAttachment } = require("../../util/fileStore");
 const chatRepository = createChatRepository(Chat, Message);
 
 const MAX_MEMBERS = 50;
@@ -84,13 +84,6 @@ const normalizeName = (name) => {
     return trimmed.length ? trimmed : null;
 };
 
-const removeChatRecord = async (chat) => {
-    const messageIds = await chatRepository.getAttachmentMessageIds(chat.id);
-
-    await Promise.all(messageIds.map((messageId) => deleteAttachment(messageId)));
-    await chatRepository.deleteChat(chat.id);
-};
-
 const chatService = {
     async createChat(data, requesterId) {
         const memberIds = uniqueSorted(data.memberIds);
@@ -116,6 +109,7 @@ const chatService = {
             adminIds: [creatorId],
             name,
             createdBy: creatorId,
+            active: true,
         });
         const chat = toPublicChat(created);
 
@@ -274,7 +268,7 @@ const chatService = {
         const adminIds = chat.adminIds.filter((id) => id !== targetId);
 
         if (memberIds.length === 0) {
-            await removeChatRecord(chat);
+            await chatRepository.updateChat(chatId, { memberIds, adminIds, active: false });
             notifyRealtime(targetId, "chatRemoved", { id: chat.id });
             return { id: chat.id };
         }
@@ -318,7 +312,7 @@ const chatService = {
 
         if (!isAdmin(chat, requesterId)) return { error: "forbidden" };
 
-        await removeChatRecord(chat);
+        await chatRepository.deactivateChat(chat.id);
         notifyEach(chat.memberIds, "chatDeleted", { id: chat.id });
         return { id: chat.id };
     },

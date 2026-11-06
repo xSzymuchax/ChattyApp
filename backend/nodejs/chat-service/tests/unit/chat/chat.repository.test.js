@@ -30,6 +30,9 @@ describe("chat repository", () => {
         const repository = createChatRepository(Chat, Message);
 
         await expect(repository.getUserChats(7)).resolves.toEqual([]);
+        expect(Chat.findAll).toHaveBeenCalledWith(expect.objectContaining({
+            where: expect.objectContaining({ active: true }),
+        }));
         expect(Message.findAll).not.toHaveBeenCalled();
     });
 

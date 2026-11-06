@@ -38,6 +38,18 @@ export const getChat = (chatId) => {
     return chatApi.get(`/chat/${chatId}`);
 }
 
+export const addChatMember = (chatId, userId) => {
+    return chatApi.post(`/chat/${chatId}/members`, { userId });
+}
+
+export const removeChatMember = (chatId, userId) => {
+    return chatApi.delete(`/chat/${chatId}/members/${userId}`);
+}
+
+export const grantChatAdmin = (chatId, userId) => {
+    return chatApi.post(`/chat/${chatId}/members/${userId}/admin`);
+}
+
 export const getMessagesFromChat = (chatId, start, end) => {
     return chatApi.post(`/chat/${chatId}/messages`, {
         start: start,

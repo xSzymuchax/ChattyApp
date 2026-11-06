@@ -25,6 +25,11 @@ const Chat = (sequelize) => {
                 type: DataTypes.INTEGER,
                 allowNull: false,
             },
+            active: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: true,
+            },
         },
         {
             tableName: "chats",

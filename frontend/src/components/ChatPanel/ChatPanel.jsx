@@ -3,6 +3,7 @@ import ChatContent from './ChatContent';
 import './ChatPanel.css'
 
 import CurrentChatHeader from './CurrentChatHeader'
+import GroupChatSettings from './GroupChatSettings';
 import MessageSender from './MessageSender';
 import EmojiPicker from './EmojiPicker';
 import { getUserById } from '../../api/user';
@@ -14,7 +15,7 @@ import { useSocket } from '../../websocket/WebSocketContext';
 const PAGE_SIZE = 20;
 const EMPTY_USER = {};
 
-function ChatPanel({chatId, onOpenGames, onOpenInvitations, onOpponentChange, onChatActivity, sentChatMessage}) {
+function ChatPanel({chatId, onOpenGames, onOpenInvitations, onOpponentChange, onChatActivity, onChatClosed, sentChatMessage}) {
     const { userId } = useAuth();
     const [otherUser, setOtherUser] = useState({});
     const [otherUserChatId, setOtherUserChatId] = useState(null);
@@ -28,6 +29,7 @@ function ChatPanel({chatId, onOpenGames, onOpenInvitations, onOpponentChange, on
     const [loadedChatId, setLoadedChatId] = useState(null);
     const [scrollToBottomToken, setScrollToBottomToken] = useState(0);
     const [attachError, setAttachError] = useState("");
+    const [settingsOpen, setSettingsOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const historyCountRef = useRef(0);
     const loadingOlderRef = useRef(false);
@@ -168,6 +170,7 @@ function ChatPanel({chatId, onOpenGames, onOpenInvitations, onOpponentChange, on
         setScrollToBottomToken(0);
         setAttachError("");
         setIsUploading(false);
+        setSettingsOpen(false);
         setChatMessages([]);
 
         if (!chatId) {
@@ -229,6 +232,23 @@ function ChatPanel({chatId, onOpenGames, onOpenInvitations, onOpponentChange, on
 
     useEffect(() => {
         const unsubscribe = subscribeToMessages((message) => {
+            if (
+                message.type === "chatUpdated"
+                && Number(message.message?.id) === Number(chatId)
+            ) {
+                setChatMeta(message.message);
+                setChatMetaId(chatId);
+                return;
+            }
+
+            if (
+                (message.type === "chatRemoved" || message.type === "chatDeleted")
+                && Number(message.message?.id) === Number(chatId)
+            ) {
+                setSettingsOpen(false);
+                return;
+            }
+
             if (message.type !== "message") {
                 return;
             }
@@ -304,6 +324,7 @@ function ChatPanel({chatId, onOpenGames, onOpenInvitations, onOpponentChange, on
                 userId={isGroup ? undefined : visibleOther.id}
                 hasAvatar={isGroup ? false : visibleOther.hasAvatar}
                 version={isGroup ? undefined : visibleOther.updatedAt}
+                onOpenSettings={isGroup ? () => setSettingsOpen(true) : null}
             />
             <ChatContent
                 key={chatId}
@@ -341,7 +362,21 @@ function ChatPanel({chatId, onOpenGames, onOpenInvitations, onOpponentChange, on
                     onMessageSend={addMessage}
                 />
             </div>
-            
+            {settingsOpen && isGroup && visibleChat && (
+                <GroupChatSettings
+                    chat={visibleChat}
+                    profiles={visibleProfiles}
+                    onClose={() => setSettingsOpen(false)}
+                    onChatChange={(chat) => {
+                        setChatMeta(chat);
+                        setChatMetaId(chatId);
+                    }}
+                    onLeft={() => {
+                        setSettingsOpen(false);
+                        onChatClosed?.();
+                    }}
+                />
+            )}
         </div>
     );
 }
