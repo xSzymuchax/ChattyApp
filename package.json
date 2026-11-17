@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npm test --prefix backend/nodejs/auth-service && npm test --prefix backend/nodejs/user-service && npm test --prefix backend/nodejs/chat-service && npm test --prefix backend/nodejs/game-service",
+    "test:scale": "node scripts/scale-check.mjs",
     "predev": "docker compose -f backend/nodejs/docker-compose.yml up -d --wait",
     "dev": "concurrently \"npm run dev --prefix backend/nodejs\" \"npm run dev --prefix frontend\"",
     "docker": "docker compose -f backend/nodejs/docker-compose.yml up -d --wait",
