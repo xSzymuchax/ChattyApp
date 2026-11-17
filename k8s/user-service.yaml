@@ -49,6 +49,8 @@ spec:
               value: postgres
             - name: DATABASE_PORT
               value: "5432"
+            - name: REDIS_URL
+              value: redis://redis:6379
           startupProbe:
             tcpSocket:
               port: http

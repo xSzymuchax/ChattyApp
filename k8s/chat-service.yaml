@@ -53,6 +53,8 @@ spec:
               value: http://realtime-gateway:3300
             - name: UPLOAD_DIR
               value: /data/uploads
+            - name: REDIS_URL
+              value: redis://redis:6379
           volumeMounts:
             - name: uploads
               mountPath: /data/uploads

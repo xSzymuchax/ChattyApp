@@ -31,6 +31,8 @@ spec:
                 secretKeyRef:
                   name: chatty-credentials
                   key: JWT_SECRET
+            - name: REDIS_URL
+              value: redis://redis:6379
           startupProbe:
             tcpSocket:
               port: http

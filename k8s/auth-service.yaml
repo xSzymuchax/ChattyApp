@@ -56,6 +56,8 @@ spec:
               value: "5432"
             - name: USER_SERVICE_URL
               value: http://user-service:3002
+            - name: REDIS_URL
+              value: redis://redis:6379
           startupProbe:
             tcpSocket:
               port: http

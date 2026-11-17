@@ -48,6 +48,8 @@ function corsOrigin(origin, callback) {
 
 const PORT = process.env.PORT || 3000;
 
+app.set('trust proxy', 1);
+
 app.use(cors({
     origin: corsOrigin,
 }));

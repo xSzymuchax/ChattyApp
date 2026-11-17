@@ -7,6 +7,8 @@ const userRoutes = require("./modules/user/user.routes");
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 app.use(express.json());
 app.use("/health", healthRoutes);
 app.use("/swagger", swaggerUI.serve, swaggerUI.setup(swaggerDoc));
