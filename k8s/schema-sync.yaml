@@ -1,0 +1,70 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: schema-sync
+  labels:
+    app: schema-sync
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app: schema-sync
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: auth
+          image: chatty-auth-service
+          imagePullPolicy: Never
+          command: ["node", "src/sync.js"]
+          env:
+            - name: DATABASE_NAME
+              value: auth_db
+            - name: DATABASE_USER
+              value: auth_service
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: AUTH_DB_PASSWORD
+            - name: DATABASE_HOST
+              value: postgres
+            - name: DATABASE_PORT
+              value: "5432"
+        - name: user
+          image: chatty-user-service
+          imagePullPolicy: Never
+          command: ["node", "src/sync.js"]
+          env:
+            - name: DATABASE_NAME
+              value: user_db
+            - name: DATABASE_USER
+              value: user_service
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: USER_DB_PASSWORD
+            - name: DATABASE_HOST
+              value: postgres
+            - name: DATABASE_PORT
+              value: "5432"
+        - name: chat
+          image: chatty-chat-service
+          imagePullPolicy: Never
+          command: ["node", "src/sync.js"]
+          env:
+            - name: DATABASE_NAME
+              value: chat_db
+            - name: DATABASE_USER
+              value: chat_service
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: CHAT_DB_PASSWORD
+            - name: DATABASE_HOST
+              value: postgres
+            - name: DATABASE_PORT
+              value: "5432"
