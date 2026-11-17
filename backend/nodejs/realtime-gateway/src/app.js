@@ -23,6 +23,7 @@ app.get('/health', (req, res) => {
     });
 });
 
+// RENDER
 app.post('/notify', checkInternal, (req, res) => {
     const { userId, type, message } = req.body;
     sendToUser(userId, message, type);

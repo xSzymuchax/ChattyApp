@@ -3,6 +3,7 @@ const createChatRepository = require("./chat.repository");
 const { serializeMessage } = require("../../util/messageView");
 const { processAttachment } = require("../../util/attachment");
 const { saveAttachment, readAttachment } = require("../../util/fileStore");
+const { publishRealtime } = require("../../realtime/publish");
 const chatRepository = createChatRepository(Chat, Message);
 
 const MAX_MEMBERS = 50;
@@ -50,11 +51,20 @@ const realtimeGatewayUrl = () => {
 };
 
 const notifyRealtime = (userId, type, message) => {
-    const url = realtimeGatewayUrl();
+    if (!userId || !message)
+        return;
 
-    if (!url || !userId || !message) {
+    // KUBERNETES
+    if (process.env.REDIS_URL) {
+        publishRealtime({ userId, type, message });
         return;
     }
+
+    // RENDER
+    const url = realtimeGatewayUrl();
+
+    if (!url)
+        return;
 
     fetch(`${url}/notify`, {
         method: "POST",
@@ -129,10 +139,14 @@ const chatService = {
             senderId: data.senderId,
             content: data.content,
         });
+        const serialized = serializeMessage(message);
+        const recipientIds = otherMemberIds(chat, data.senderId);
+
+        notifyEach(recipientIds, "message", serialized);
 
         return {
-            message: serializeMessage(message),
-            recipientIds: otherMemberIds(chat, data.senderId),
+            message: serialized,
+            recipientIds,
         };
     },
 

@@ -1,10 +1,13 @@
 const {server} = require("./app");
 
 require("dotenv").config();
+const subscribeFanout = require("./websocket/fanout");
 const PORT = process.env.PORT || 3300;
 
 async function startServer() {
     try {
+        await subscribeFanout();
+
         server.listen(PORT, '0.0.0.0', () => {
             console.log(`Realtime gateway running on port ${PORT}`);
         });

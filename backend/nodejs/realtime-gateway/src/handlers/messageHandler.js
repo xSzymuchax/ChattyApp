@@ -1,5 +1,4 @@
 const axios = require('axios');
-const { sendToUser } = require('../websocket/connectionManager');
 
 async function handleMessage(ws, data) {
     try{
@@ -27,21 +26,6 @@ async function handleMessage(ws, data) {
         );
 
         console.log(response.data);
-
-        if (response.status === 200) {
-            const recipientIds = Array.isArray(response.data.recipientIds)
-                ? response.data.recipientIds
-                : [];
-
-            for (const recipientId of recipientIds) {
-                sendToUser(
-                    recipientId,
-                    response.data.message,
-                    "message"
-                );
-            }
-        }
-    
     } catch (error) {
         console.log(error);
     }

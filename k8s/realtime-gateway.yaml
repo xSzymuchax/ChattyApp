@@ -40,6 +40,8 @@ spec:
               value: http://chat-service:3003
             - name: GAME_SERVICE_URL
               value: http://game-service:3004
+            - name: REDIS_URL
+              value: redis://redis:6379
           startupProbe:
             tcpSocket:
               port: http
