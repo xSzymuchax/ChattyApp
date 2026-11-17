@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-service
+  labels:
+    app: game-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game-service
+  template:
+    metadata:
+      labels:
+        app: game-service
+    spec:
+      containers:
+        - name: game-service
+          image: chatty-game-service
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 3004
+          env:
+            - name: PORT
+              value: "3004"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: chatty-credentials
+                  key: JWT_SECRET
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            tcpSocket:
+              port: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: game-service
+  labels:
+    app: game-service
+spec:
+  selector:
+    app: game-service
+  ports:
+    - name: http
+      port: 3004
+      targetPort: http
