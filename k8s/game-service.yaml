@@ -68,7 +68,7 @@ spec:
     kind: Deployment
     name: game-service
   minReplicas: 1
-  maxReplicas: 1
+  maxReplicas: 2
   metrics:
     - type: Resource
       resource:
