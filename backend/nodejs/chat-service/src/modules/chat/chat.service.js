@@ -4,6 +4,7 @@ const { serializeMessage } = require("../../util/messageView");
 const { processAttachment } = require("../../util/attachment");
 const { saveAttachment, readAttachment } = require("../../util/fileStore");
 const { publishRealtime } = require("../../realtime/publish");
+const { readMembership, saveMembership } = require("../../util/membershipCache");
 const chatRepository = createChatRepository(Chat, Message);
 
 const MAX_MEMBERS = 50;
@@ -86,6 +87,32 @@ const notifyEach = (userIds, type, message) => {
     }
 };
 
+const rememberMembers = (chat, active = true) => {
+    if (!chat?.id)
+        return Promise.resolve();
+
+    // KUBERNETES
+    return saveMembership(chat.id, {
+        memberIds: uniqueSorted(chat.memberIds),
+        active,
+    });
+};
+
+const membershipOf = async (chatId) => {
+    // KUBERNETES
+    const cached = await readMembership(chatId);
+
+    if (cached)
+        return cached.active ? { id: Number(chatId), memberIds: uniqueSorted(cached.memberIds) } : null;
+
+    const chat = await chatRepository.getChatById(chatId);
+
+    if (chat)
+        await rememberMembers(chat, true);
+
+    return chat;
+};
+
 const normalizeName = (name) => {
     if (name === undefined || name === null) return null;
     if (typeof name !== "string") return undefined;
@@ -122,13 +149,14 @@ const chatService = {
             active: true,
         });
         const chat = toPublicChat(created);
+        await rememberMembers(chat, true);
 
         notifyEach(otherMemberIds(chat, creatorId), "chatCreated", chat);
         return chat;
     },
 
     async createMessage(chatId, data) {
-        const chat = await chatRepository.getChatById(chatId);
+        const chat = await membershipOf(chatId);
 
         if (!chat) return { error: "not_found" };
 
@@ -151,7 +179,7 @@ const chatService = {
     },
 
     async createAttachment(chatId, { senderId, file }) {
-        const chat = await chatRepository.getChatById(chatId);
+        const chat = await membershipOf(chatId);
 
         if (!chat) return { error: "not_found" };
 
@@ -183,7 +211,7 @@ const chatService = {
     },
 
     async getAttachment(chatId, messageId, userId) {
-        const chat = await chatRepository.getChatById(chatId);
+        const chat = await membershipOf(chatId);
 
         if (!chat) return { error: "not_found" };
 
@@ -207,7 +235,7 @@ const chatService = {
     },
 
     async getMessages(chatId, start, end, requesterId) {
-        const chat = await chatRepository.getChatById(chatId);
+        const chat = await membershipOf(chatId);
 
         if (!chat) return { error: "not_found" };
 
@@ -227,6 +255,8 @@ const chatService = {
         const chat = await chatRepository.getChatById(id);
 
         if (!chat) return null;
+
+        await rememberMembers(chat, true);
 
         if (!isParticipant(chat, requesterId)) return { error: "forbidden" };
 
@@ -252,6 +282,7 @@ const chatService = {
             memberIds: uniqueSorted([...chat.memberIds, nextUserId]),
         });
 
+        await rememberMembers(updated, true);
         notifyRealtime(nextUserId, "chatCreated", updated);
         notifyEach(chat.memberIds, "chatUpdated", updated);
         return updated;
@@ -279,11 +310,13 @@ const chatService = {
 
         if (memberIds.length === 0) {
             await chatRepository.updateChat(chatId, { memberIds, adminIds, active: false });
+            await rememberMembers({ id: chat.id, memberIds }, false);
             notifyRealtime(targetId, "chatRemoved", { id: chat.id });
             return { id: chat.id };
         }
 
         const updated = await chatRepository.updateChat(chatId, { memberIds, adminIds });
+        await rememberMembers(updated, true);
 
         notifyRealtime(targetId, "chatRemoved", { id: chat.id });
         notifyEach(memberIds, "chatUpdated", updated);
@@ -323,6 +356,7 @@ const chatService = {
         if (!isAdmin(chat, requesterId)) return { error: "forbidden" };
 
         await chatRepository.deactivateChat(chat.id);
+        await rememberMembers(chat, false);
         notifyEach(chat.memberIds, "chatDeleted", { id: chat.id });
         return { id: chat.id };
     },
