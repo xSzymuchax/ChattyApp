@@ -5,7 +5,6 @@ metadata:
   labels:
     app: game-service
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: game-service
@@ -18,6 +17,9 @@ spec:
         - name: game-service
           image: chatty-game-service
           imagePullPolicy: Never
+          resources:
+            requests:
+              cpu: 20m
           ports:
             - name: http
               containerPort: 3004
@@ -51,3 +53,24 @@ spec:
     - name: http
       port: 3004
       targetPort: http
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: game-service
+  labels:
+    app: game-service
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: game-service
+  minReplicas: 1
+  maxReplicas: 1
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
