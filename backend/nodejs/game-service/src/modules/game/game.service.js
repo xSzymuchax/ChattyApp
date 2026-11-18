@@ -17,13 +17,14 @@ const isParticipant = (room, userId) =>
     Number(room.firstUserId) === Number(userId) ||
     Number(room.secondUserId) === Number(userId);
 
-const userIsBusy = (userId) => gameRepository.findByUserId(userId).length > 0;
+const userIsBusy = async (userId) =>
+    (await gameRepository.findByUserId(userId)).length > 0;
 
 const gameService = {
     allowedGameNames: ALLOWED_GAME_NAMES,
 
-    createGameRoom({ gameName, firstUserId, secondUserId }) {
-        if (userIsBusy(firstUserId) || userIsBusy(secondUserId))
+    async createGameRoom({ gameName, firstUserId, secondUserId }) {
+        if (await userIsBusy(firstUserId) || await userIsBusy(secondUserId))
             return { error: "busy" };
 
         const rules = getRules(gameName);
@@ -40,27 +41,26 @@ const gameService = {
             moves: [],
         };
 
-        return { room: toPublicRoom(gameRepository.create(room)) };
+        return { room: toPublicRoom(await gameRepository.create(room)) };
     },
 
-    getGameRoom(id) {
-        const room = gameRepository.findById(id);
+    async getGameRoom(id) {
+        const room = await gameRepository.findById(id);
         return room ? toPublicRoom(room) : null;
     },
 
-    getUserGames(userId) {
-        return gameRepository.findByUserId(userId).map(toPublicRoom);
+    async getUserGames(userId) {
+        return (await gameRepository.findByUserId(userId)).map(toPublicRoom);
     },
 
-    getInvitations(userId) {
-        return gameRepository
-            .findByUserId(userId)
+    async getInvitations(userId) {
+        return (await gameRepository.findByUserId(userId))
             .filter((room) => room.status === "pending" && room.secondUserId === userId)
             .map(toPublicRoom);
     },
 
-    acceptInvitation(id, userId) {
-        const room = gameRepository.findById(id);
+    async acceptInvitation(id, userId) {
+        const room = await gameRepository.findById(id);
 
         if (!room)
             return { error: "not_found" };
@@ -69,13 +69,13 @@ const gameService = {
             return { error: "forbidden" };
 
         room.status = "active";
-        gameRepository.save(room);
+        await gameRepository.save(room);
 
         return { room: toPublicRoom(room) };
     },
 
-    leaveGame(id, userId) {
-        const room = gameRepository.findById(id);
+    async leaveGame(id, userId) {
+        const room = await gameRepository.findById(id);
 
         if (!room)
             return { error: "not_found" };
@@ -83,12 +83,12 @@ const gameService = {
         if (!isParticipant(room, userId))
             return { error: "forbidden" };
 
-        gameRepository.delete(id);
+        await gameRepository.delete(id);
         return { room: toPublicRoom(room) };
     },
 
-    makeMove(id, { userId, move }) {
-        const room = gameRepository.findById(id);
+    async makeMove(id, { userId, move }) {
+        const room = await gameRepository.findById(id);
 
         if (!room)
             return { error: "not_found" };
@@ -112,7 +112,7 @@ const gameService = {
 
         room.gameState = result.gameState;
         room.moves.push({ userId, move });
-        gameRepository.save(room);
+        await gameRepository.save(room);
 
         return { room: toPublicRoom(room) };
     },

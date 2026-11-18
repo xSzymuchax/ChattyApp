@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-service
+  labels:
+    app: game-service
+spec:
+  selector:
+    matchLabels:
+      app: game-service
+  template:
+    metadata:
+      labels:
+        app: game-service
+    spec:
+      containers:
+        - name: game-service
+          image: chatty-game-service
+          imagePullPolicy: Never
+          resources:
+            requests:
+              cpu: 20m
+          ports:
+            - name: http
+              containerPort: 3004
+          env:
+            - name: PORT
+              value: "3004"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: chatty-credentials
+                  key: JWT_SECRET
+            - name: REDIS_URL
+              value: redis://redis:6379
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            tcpSocket:
+              port: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: game-service
+  labels:
+    app: game-service
+spec:
+  selector:
+    app: game-service
+  ports:
+    - name: http
+      port: 3004
+      targetPort: http
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: game-service
+  labels:
+    app: game-service
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: game-service
+  minReplicas: 1
+  maxReplicas: 2
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70

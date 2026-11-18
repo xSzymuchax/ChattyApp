@@ -1,20 +1,18 @@
 const app = require("./app");
 require("dotenv").config();
+const { connectRedis } = require("./middleware/rateLimit");
+const { connectRealtime } = require("./realtime/publish");
+const { connectMembershipCache } = require("./util/membershipCache");
 const PORT = process.env.PORT || 3000;
 
-const sequelize = require("./config/database");
+async function start() {
+    await connectRedis();
+    await connectRealtime();
+    await connectMembershipCache();
 
-async function startServer() {
-    try{
-        await sequelize.sync({ alter: true });
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Chat service running on port ${PORT}`);
+    });
+}
 
-        app.listen(PORT, '0.0.0.0', () => {
-            console.log(`Chat service running on port ${PORT}`);
-        });
-    }
-    catch (error) {
-        console.log(error);
-    }
-};
-
-startServer();
+start();

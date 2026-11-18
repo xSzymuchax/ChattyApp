@@ -9,6 +9,8 @@ const authRoutes = require("./modules/auth/auth.routes");
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 function corsOrigin(origin, callback) {
     if (!origin) {
         callback(null, true);

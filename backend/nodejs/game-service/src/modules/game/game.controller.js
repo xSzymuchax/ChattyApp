@@ -19,7 +19,7 @@ const requesterId = (req) => parsePositiveInt(req.user?.userId);
 
 const ownsRequest = (req, userId) => requesterId(req) === userId;
 
-const createGameRoom = (req, res) => {
+const createGameRoom = async (req, res) => {
     try {
         const firstUserId = parseBodyUserId(req.body.firstUserId);
         const secondUserId = parseBodyUserId(req.body.secondUserId);
@@ -36,7 +36,7 @@ const createGameRoom = (req, res) => {
         if (!ownsRequest(req, firstUserId))
             return res.status(403).json({ message: "Access denied." });
 
-        const result = gameService.createGameRoom({ gameName, firstUserId, secondUserId });
+        const result = await gameService.createGameRoom({ gameName, firstUserId, secondUserId });
 
         if (result.error === "busy")
             return res.status(409).json({ message: "User is already in a game." });
@@ -48,14 +48,14 @@ const createGameRoom = (req, res) => {
     }
 };
 
-const getGameRoom = (req, res) => {
+const getGameRoom = async (req, res) => {
     try {
         const id = parseRoomId(req.params.id);
 
         if (!id)
             return res.status(400).json({ message: "Bad request." });
 
-        const result = gameService.getGameRoom(id);
+        const result = await gameService.getGameRoom(id);
 
         if (!result)
             return res.status(404).json({ message: "Game room not found." });
@@ -72,35 +72,35 @@ const getGameRoom = (req, res) => {
     }
 };
 
-const getUserGames = (req, res) => {
+const getUserGames = async (req, res) => {
     try {
         const userId = requesterId(req);
 
         if (!userId)
             return res.status(400).json({ message: "Bad request." });
 
-        res.status(200).json(gameService.getUserGames(userId));
+        res.status(200).json(await gameService.getUserGames(userId));
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Internal server error." });
     }
 };
 
-const getInvitations = (req, res) => {
+const getInvitations = async (req, res) => {
     try {
         const userId = requesterId(req);
 
         if (!userId)
             return res.status(400).json({ message: "Bad request." });
 
-        res.status(200).json(gameService.getInvitations(userId));
+        res.status(200).json(await gameService.getInvitations(userId));
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Internal server error." });
     }
 };
 
-const acceptInvitation = (req, res) => {
+const acceptInvitation = async (req, res) => {
     try {
         const id = parseRoomId(req.params.id);
         const userId = requesterId(req);
@@ -108,7 +108,7 @@ const acceptInvitation = (req, res) => {
         if (!id || !userId || req.body?.status !== "active")
             return res.status(400).json({ message: "Bad request." });
 
-        const result = gameService.acceptInvitation(id, userId);
+        const result = await gameService.acceptInvitation(id, userId);
 
         if (result.error === "not_found")
             return res.status(404).json({ message: "Game room not found." });
@@ -123,7 +123,7 @@ const acceptInvitation = (req, res) => {
     }
 };
 
-const leaveGame = (req, res) => {
+const leaveGame = async (req, res) => {
     try {
         const id = parseRoomId(req.params.id);
         const userId = requesterId(req);
@@ -131,7 +131,7 @@ const leaveGame = (req, res) => {
         if (!id || !userId)
             return res.status(400).json({ message: "Bad request." });
 
-        const result = gameService.leaveGame(id, userId);
+        const result = await gameService.leaveGame(id, userId);
 
         if (result.error === "not_found")
             return res.status(404).json({ message: "Game room not found." });
@@ -146,7 +146,7 @@ const leaveGame = (req, res) => {
     }
 };
 
-const makeMove = (req, res) => {
+const makeMove = async (req, res) => {
     try {
         const id = parseRoomId(req.params.id);
         const userId = requesterId(req);
@@ -155,7 +155,7 @@ const makeMove = (req, res) => {
         if (!id || !userId || move === undefined)
             return res.status(400).json({ message: "Bad request." });
 
-        const result = gameService.makeMove(id, { userId, move });
+        const result = await gameService.makeMove(id, { userId, move });
 
         if (result.error === "not_found")
             return res.status(404).json({ message: "Game room not found." });

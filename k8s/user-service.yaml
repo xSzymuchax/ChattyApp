@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  labels:
+    app: user-service
+spec:
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+        - name: user-service
+          image: chatty-user-service
+          imagePullPolicy: Never
+          resources:
+            requests:
+              cpu: 20m
+          ports:
+            - name: http
+              containerPort: 3002
+          env:
+            - name: PORT
+              value: "3002"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: chatty-credentials
+                  key: JWT_SECRET
+            - name: INTERNAL_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: chatty-credentials
+                  key: INTERNAL_SERVICE_TOKEN
+            - name: DATABASE_NAME
+              value: user_db
+            - name: DATABASE_USER
+              value: user_service
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: USER_DB_PASSWORD
+            - name: DATABASE_HOST
+              value: postgres
+            - name: DATABASE_PORT
+              value: "5432"
+            - name: REDIS_URL
+              value: redis://redis:6379
+            - name: S3_ENDPOINT
+              value: http://minio:9000
+            - name: S3_BUCKET
+              value: chatty-data
+            - name: S3_ACCESS_KEY
+              value: minio
+            - name: S3_SECRET_KEY
+              value: minio-local
+            - name: S3_REGION
+              value: us-east-1
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            tcpSocket:
+              port: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  labels:
+    app: user-service
+spec:
+  selector:
+    app: user-service
+  ports:
+    - name: http
+      port: 3002
+      targetPort: http
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: user-service
+  labels:
+    app: user-service
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: user-service
+  minReplicas: 1
+  maxReplicas: 2
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70

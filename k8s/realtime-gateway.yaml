@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: realtime-gateway
+  labels:
+    app: realtime-gateway
+spec:
+  selector:
+    matchLabels:
+      app: realtime-gateway
+  template:
+    metadata:
+      labels:
+        app: realtime-gateway
+    spec:
+      containers:
+        - name: realtime-gateway
+          image: chatty-realtime-gateway
+          imagePullPolicy: Never
+          resources:
+            requests:
+              cpu: 20m
+          ports:
+            - name: http
+              containerPort: 3300
+          env:
+            - name: PORT
+              value: "3300"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: chatty-credentials
+                  key: JWT_SECRET
+            - name: INTERNAL_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: chatty-credentials
+                  key: INTERNAL_SERVICE_TOKEN
+            - name: CHAT_SERVICE_URL
+              value: http://chat-service:3003
+            - name: GAME_SERVICE_URL
+              value: http://game-service:3004
+            - name: REDIS_URL
+              value: redis://redis:6379
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            tcpSocket:
+              port: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: realtime-gateway
+  labels:
+    app: realtime-gateway
+spec:
+  selector:
+    app: realtime-gateway
+  ports:
+    - name: http
+      port: 3300
+      targetPort: http
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: realtime-gateway
+  labels:
+    app: realtime-gateway
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: realtime-gateway
+  minReplicas: 1
+  maxReplicas: 2
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
